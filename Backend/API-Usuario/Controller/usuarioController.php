@@ -2,7 +2,7 @@
 
 require_once __DIR__ . "/../Service/usuarioService.php";
 
-class usuarioController
+class UsuarioController
 {
 
     protected $usuarioService;
@@ -29,7 +29,7 @@ class usuarioController
             http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
-                'message' => $e->getMessage()
+                'mensagem' => $e->getMessage()
             ]);
         }
     }
@@ -45,7 +45,7 @@ class usuarioController
                 http_response_code($e->getCode());
                 echo json_encode([
                     'sucesso' => false,
-                    'message' => $e->getMessage()
+                    'mensagem' => $e->getMessage()
                 ]);
             } 
     }
@@ -71,7 +71,7 @@ class usuarioController
             http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
-                'message' => $e->getMessage()
+                'mensagem' => $e->getMessage()
             ]);
             exit;
         }
@@ -97,7 +97,7 @@ class usuarioController
             http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
-                'message' => $e->getMessage()
+                'mensagem' => $e->getMessage()
             ]);
         }
     }

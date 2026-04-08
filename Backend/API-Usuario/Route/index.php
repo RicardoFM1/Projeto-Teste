@@ -26,7 +26,7 @@ if($metodoRequisicao === "OPTIONS"){
 }
 
 if($caminhoRequisicao === "/usuario"){
-    $usuarioController = new usuarioController();
+    $usuarioController = new UsuarioController();
     UsuarioMiddleware::validarMiddlewareUsuario($metodoRequisicao);
 
     if($metodoRequisicao === "GET"){
@@ -47,7 +47,7 @@ if($caminhoRequisicao === "/usuario"){
 }
 
 if($caminhoRequisicao === "/usuario/login"){
-    $usuarioController = new usuarioController();
+    $usuarioController = new UsuarioController();
 
     if($metodoRequisicao === "POST"){
         $usuarioController->fazerLogin();

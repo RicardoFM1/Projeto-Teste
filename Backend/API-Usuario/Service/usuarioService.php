@@ -31,7 +31,7 @@ class UsuarioService
 
             return [
                 'sucesso' => false,
-                'message' => 'Id do usuário não informado',
+                'mensagem' => 'Id do usuário não informado',
                 'codigo' => 400
             ];
         }
@@ -44,7 +44,7 @@ class UsuarioService
 
             return [
                 'sucesso' => false,
-                'message' => "Usuário não encontrado",
+                'mensagem' => "Usuário não encontrado",
                 'codigo' => 404
             ];
         }
@@ -61,7 +61,7 @@ class UsuarioService
 
             return [
                 'sucesso' => false,
-                'message' => 'Email do usuário não informado',
+                'mensagem' => 'Email do usuário não informado',
                 'codigo' => 400
             ];
         }
@@ -74,7 +74,7 @@ class UsuarioService
 
             return [
                 'sucesso' => false,
-                'message' => "Usuário não encontrado",
+                'mensagem' => "Usuário não encontrado",
                 'codigo' => 404
             ];
         }
@@ -91,7 +91,7 @@ class UsuarioService
 
             return [
                 'sucesso' => false,
-                'message' => 'CPF do usuário não informado',
+                'mensagem' => 'CPF do usuário não informado',
                 'codigo' => 400
             ];
         }
@@ -104,7 +104,7 @@ class UsuarioService
 
             return [
                 'sucesso' => false,
-                'message' => "Usuário não encontrado",
+                'mensagem' => "Usuário não encontrado",
                 'codigo' => 404
             ];
         }
@@ -119,7 +119,9 @@ class UsuarioService
     public function criarUsuario($usuarioDados)
     {
         
-        UsuarioValidator::validarDadosUsuario($usuarioDados);
+        UsuarioValidador::validarUsuario($usuarioDados);
+        // formatar cpf
+        $usuarioDados['cpf'] = str_replace([' ', '.', '-'], '', $usuarioDados['cpf']);
 
         if ($this->buscarUsuarioPorCpf($usuarioDados['cpf'])['sucesso']) {
             throw new Exception("Este CPF já está cadastrado", 409);
@@ -146,7 +148,7 @@ class UsuarioService
 
         return [
             'sucesso' => true,
-            'message' => 'Usuario criado com sucesso'
+            'mensagem' => 'Usuario criado com sucesso'
         ];
     }
 
@@ -181,7 +183,7 @@ class UsuarioService
         
         return [
             'sucesso' => true,
-            'message' => 'Usuario logado com sucesso',
+            'mensagem' => 'Usuario logado com sucesso',
             'token' => $jwt
         ];
     }
@@ -192,8 +194,9 @@ class UsuarioService
     public function atualizarUsuario($usuarioDados, $idUsuario, $tokenJWT)
     {
 
-        UsuarioValidator::validarDadosUsuario($usuarioDados);
-
+        UsuarioValidador::validarUsuario($usuarioDados);
+        // formatar cpf
+        $usuarioDados['cpf'] = str_replace([' ', '.', '-'], '', $usuarioDados['cpf']);
 
         if (empty($tokenJWT)) {
             throw new Exception("Token JWT não informado", 400);
@@ -206,7 +209,7 @@ class UsuarioService
         $usuario = $this->buscarUsuarioPorId($idUsuario);
 
         if (isset($usuario['sucesso']) && $usuario['sucesso'] === false) {
-            throw new Exception($usuario['message'], $usuario['codigo']);
+            throw new Exception($usuario['mensagem'], $usuario['codigo']);
         }
 
         $atualizarUsuario = $this->usuarioDb->prepare("UPDATE usuarios SET nome = :nome, email = :email,
@@ -224,7 +227,7 @@ class UsuarioService
 
         return [
             'sucesso' => true,
-            'message' => 'Usuario atualizado com sucesso'
+            'mensagem' => 'Usuario atualizado com sucesso'
         ];
     }
 
@@ -243,7 +246,7 @@ class UsuarioService
         $usuario = $this->buscarUsuarioPorId($idUsuario);
 
         if (isset($usuario['sucesso']) && $usuario['sucesso'] === false) {
-            throw new Exception($usuario['message'], $usuario['codigo']);
+            throw new Exception($usuario['mensagem'], $usuario['codigo']);
         }
 
         $deletarUsuario = $this->usuarioDb->prepare("DELETE FROM usuario WHERE id_usuario = :id_usuario");
@@ -252,7 +255,7 @@ class UsuarioService
 
         return [
             'sucesso' => true,
-            'message' => 'Usuario deletado com sucesso'
+            'mensagem' => 'Usuario deletado com sucesso'
         ];
     }
 }

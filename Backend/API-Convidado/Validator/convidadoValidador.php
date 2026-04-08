@@ -3,30 +3,35 @@
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
-class UsuarioValidador
+class ConvidadoValidador
 {
-    public static function validarUsuario($usuarioDados)
+    public static function validarConvidado($convidadoDados)
     {
 
-        $cargosPermitidos = ['admin', 'ceremonialista'];
-        $usuarioDados['cpf'] = str_replace([' ', '.', '-'], '', $usuarioDados['cpf']);
+       
+        $convidadoDados['cpf'] = str_replace([' ', '.', '-'], '', $convidadoDados['cpf']);
+        $convidadoDados['telefone'] = str_replace([' ', '.', '-', '(', ')', '+'], '', $convidadoDados['telefone']);
+
 
         $esquema = v::key('nome', v::stringVal()->length(5, 50)->notEmpty())
+            ->key('sobrenome', v::stringVal()->length(5, 50)->notEmpty())
             ->key('email', v::email())
-            ->key('senha', v::stringVal()->notEmpty()->length(8, 50)->regex('/\d/')->regex('/[!@#$%¨&*()]/'))
             ->key('cpf', v::cpf())
-            ->key('cargo', v::in($cargosPermitidos));
+            ->key('telefone', v::phone())
+            ->key('numero_mesa', v::intVal());
 
         try {
             
-            $esquema->assert($usuarioDados);
+            $esquema->assert($convidadoDados);
+
         } catch (NestedValidationException $e) {
             $mensagemPersonalizada = [
                 'nome' => 'Nome inválido, mínimo 5 caracteres e máximo 50',
+                'sobrenome' =>  'Sobrenome inválido, mínimo 5 caracteres e máximo 50',
                 'email' => 'Email inválido',
-                'senha' => 'Senha inválida, mínimo 8 caracteres, máximo 50, pelo menos 1 digito e um caractere especial',
                 'cpf' => 'CPF inválido',
-                'cargo' => 'Cargo inválido, apenas é aceito: admin ou ceremonialista'
+                'telefone' => 'Telefone inválido',
+                'numero_mesa' => 'Número de mesa precisa ser apenas número'
             ];
             $mensagemOriginal = $e->getMessages();
             $mensagensTraduzidas = [];
