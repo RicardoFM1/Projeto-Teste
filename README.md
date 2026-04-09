@@ -90,8 +90,10 @@ Rota de Acompanhante:
 ## Uso no workbench:
 - .SQL:
 
+
 <details>
 <summary>Clique para ver o .SQL</summary>
+
 ```sql
 -- MySQL Workbench Forward Engineering
 
@@ -207,8 +209,9 @@ SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
-</details>
 ``` 
+</details>
+
 
 ### Chaves de ambiente:
 
@@ -245,8 +248,10 @@ Rota| Porta | Método | Auth |
 /usuario?id_usuario={id}|3000| PUT  | Admin | 
 /usuario?id_usuario={id}|3000| DELETE | Admin |
 
+
 <details>
 <summary>Expanda para encontrar o que enviar no corpo da requisição</summary>
+
 ```json
 {
     "nome": "Ricardo",
@@ -256,8 +261,8 @@ Rota| Porta | Método | Auth |
 	"cpf": "406.012.850-34"
 }
 
-</details>
 ```
+</details>
 
 
 ---
@@ -273,6 +278,7 @@ Rota| Porta | Método | Auth |
 
 <details>
 <summary>Expanda para encontrar o que enviar no corpo da requisição</summary>
+
 ```json
 {
     "nome": "Ricardo",
@@ -281,9 +287,9 @@ Rota| Porta | Método | Auth |
 	"cpf": "406.012.850-34",
     "cargo": "ceremonialista"
 }
-</details>
 
 ```
+</details>
 
 
 ---
@@ -302,6 +308,7 @@ Rota| Porta | Método | Auth |
 
 <details>
 <summary>Expanda para encontrar o que enviar no corpo da requisição</summary>
+
 ```json
 {
     "convidado_idconvidado": 1
@@ -327,6 +334,7 @@ Rota| Porta | Método | Auth |
 
 <details>
 <summary>Expanda para encontrar o que enviar no corpo da requisição</summary>
+
 ```json
 {
     "nome": "Ricardo",
@@ -336,8 +344,8 @@ Rota| Porta | Método | Auth |
     "convidado_idconvidado": 1
 }
 
-</details>
 ```
+</details>
 
 
 # Lógicas de autenticação
