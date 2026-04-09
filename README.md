@@ -23,10 +23,29 @@ O Intuito do projeto é criar um software que possa ser utilizado por usuários 
 
 ---
 
+### Estrutura:
+
+O projeto foi divido em 4 APIs:
+
+-API-Usuario;
+-API-Convidado;
+-API-Checkin;
+-API-Acompanhante;
+
+Cada uma com seu banco de dados, exceto de convidado e acompanhante, que estão no mesmo banco de dados
+
+Os bancos de dados são:
+db_usuario
+db_convidado
+db_checkin
+
+---
+
 ### Como testar o projeto: 
 
 - Primeiramente clone o projeto pelo github, abrindo um bash no terminal.
 Dentro do bash digite e instale as dependências:
+
 ```bash 
     cd Projeto-Teste/backend
     composer i
@@ -68,6 +87,147 @@ Rota de Acompanhante:
 
 ```
 
+## Uso no workbench:
+- .SQL:
+
+<details>
+<summary>Clique para ver o .SQL</summary>
+```sql
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema db_usuario
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema db_usuario
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `db_usuario` DEFAULT CHARACTER SET utf8 ;
+-- -----------------------------------------------------
+-- Schema db_convidado
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema db_convidado
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `db_convidado` ;
+-- -----------------------------------------------------
+-- Schema db_checkin
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema db_checkin
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `db_checkin` ;
+USE `db_usuario` ;
+
+-- -----------------------------------------------------
+-- Table `db_usuario`.`usuario`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `db_usuario`.`usuario` (
+  `id_usuario` INT NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(45) NOT NULL,
+  `email` VARCHAR(45) NOT NULL,
+  `senha` LONGTEXT NOT NULL,
+  `cargo` VARCHAR(45) NOT NULL,
+  `cpf` VARCHAR(11) NOT NULL,
+  PRIMARY KEY (`id_usuario`),
+  UNIQUE INDEX `cpf_UNIQUE` (`cpf` ASC) VISIBLE,
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+USE `db_convidado` ;
+
+-- -----------------------------------------------------
+-- Table `db_convidado`.`convidado`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `db_convidado`.`convidado` (
+  `id_convidado` INT NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(45) NOT NULL,
+  `sobrenome` VARCHAR(45) NOT NULL,
+  `email` VARCHAR(45) NOT NULL,
+  `cpf` VARCHAR(11) NOT NULL,
+  `telefone` VARCHAR(15) NOT NULL,
+  `numero_mesa` INT NULL,
+  PRIMARY KEY (`id_convidado`),
+  UNIQUE INDEX `cpf_UNIQUE` (`cpf` ASC) VISIBLE,
+  UNIQUE INDEX `email_UNIQUE` (`email` ASC) VISIBLE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `db_convidado`.`acompanhante`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `db_convidado`.`acompanhante` (
+  `id_acompanhante` INT NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(45) NOT NULL,
+  `sobrenome` VARCHAR(45) NOT NULL,
+  `cpf` VARCHAR(11) NOT NULL,
+  `telefone` VARCHAR(45) NOT NULL,
+  `convidado_idconvidado` INT NOT NULL,
+  PRIMARY KEY (`id_acompanhante`),
+  INDEX `fk_convidado_idconvidado_idx` (`convidado_idconvidado` ASC) VISIBLE,
+  CONSTRAINT `fk_convidado_idconvidado`
+    FOREIGN KEY (`convidado_idconvidado`)
+    REFERENCES `db_convidado`.`convidado` (`id_convidado`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+USE `db_checkin` ;
+
+-- -----------------------------------------------------
+-- Table `db_checkin`.`checkin`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `db_checkin`.`checkin` (
+  `id_checkin` INT NOT NULL AUTO_INCREMENT,
+  `convidado_idconvidado` INT NOT NULL,
+  `usuario_idusuario` INT NOT NULL,
+  PRIMARY KEY (`id_checkin`),
+  INDEX `fk_convidado_idconvidado_idx` (`convidado_idconvidado` ASC) VISIBLE,
+  INDEX `fk_usuario_idusuario_idx` (`usuario_idusuario` ASC) VISIBLE,
+  CONSTRAINT `fk_convidado_idconvidado`
+    FOREIGN KEY (`convidado_idconvidado`)
+    REFERENCES `db_convidado`.`convidado` (`id_convidado`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_usuario_idusuario`
+    FOREIGN KEY (`usuario_idusuario`)
+    REFERENCES `db_usuario`.`usuario` (`id_usuario`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+``` 
+</details>
+
+### Chaves de ambiente:
+
+Crie um arquivo no raiz do projeto chamado .env e coloque:
+
+```
+DBUSUARIO_NAME="db_usuario"
+
+DBCONVIDADO_NAME="db_convidado"
+
+DBCHECKIN_NAME="db_checkin"
+
+
+DB_HOST="localhost"
+DB_USER="root"
+DB_PASS="SUA_CHAVE_DO_BANCO"
+
+JWT_SECRET_KEY=WDBAWHDBWADWAKJDANKJSBDJWKJANWDKBWJHVDBJHAWBDKWAJDKJAWCDKWA!!!!!@@@!@!@!!@1212144
+```
 ---
 
 # Uso no insomnia/postman:
@@ -171,7 +331,7 @@ Rota| Porta | Método | Auth |
     "nome": "Ricardo",
 	"sobrenome": "Fernandes",
 	"telefone": "51984018587",
-	"cpf": "406.012.850-34"
+	"cpf": "406.012.850-34",
     "convidado_idconvidado": 1
 }
 
@@ -184,17 +344,25 @@ Rota| Porta | Método | Auth |
 # Lógicas de autenticação
 
 
-## Precisa apenas estar logado:
+## Rotas:
 - Rota de usuário em:
+
+* PRECISA DE ADMIN:
 /usuario | GET
 /usuario | POST
 /usuario | PUT
 /usuario | DELETE
 
-Todos necessitam de acesso de ADMIN, menos /usuario/login acima.
+* Login:
+/usuario/login | POST
+
+---
 
 
 - Rota de convidado em:
+
+* PRECISA DE AUTENTICAÇÃO:
+
 /convidado | GET
 /convidado | POST
 /convidado | PUT
@@ -204,6 +372,9 @@ Todos necessitam de acesso de ADMIN, menos /usuario/login acima.
 
 
 - Rota de checkin em:
+
+* PRECISA DE AUTENTICAÇÃO:
+
 /checkin | GET
 /checkin | POST
 /checkin | PUT
@@ -212,6 +383,9 @@ Todos necessitam de acesso de ADMIN, menos /usuario/login acima.
 
 
 - Rota de acompanhante em:
+
+* PRECISA DE AUTENTICAÇÃO:
+
 /acompanhante | GET
 /acompanhante | POST
 /acompanhante | PUT
