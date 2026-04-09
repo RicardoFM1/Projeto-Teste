@@ -239,14 +239,14 @@ As rotas são as seguintes:
 
 Rota| Porta | Método | Auth |
 ----|-------|--------|------|
-`/usuario|3000| GET  | Admin |
-`/usuario|3000| POST | Admin |
-`/usuario/login|3000| POST | Todos |
-`/usuario?id_usuario={id}|3000| PUT  | Admin | 
-`/usuario?id_usuario={id}|3000| DELETE | Admin |
+/usuario|3000| GET  | Admin |
+/usuario|3000| POST | Admin |
+/usuario/login|3000| POST | Todos |
+/usuario?id_usuario={id}|3000| PUT  | Admin | 
+/usuario?id_usuario={id}|3000| DELETE | Admin |
 
 <details>
-<summary>Expanda para encontra o que enviar no corpo da requisição</summary>
+<summary>Expanda para encontrar o que enviar no corpo da requisição</summary>
 ```json
 {
     "nome": "Ricardo",
@@ -266,13 +266,13 @@ Rota| Porta | Método | Auth |
 
 Rota| Porta | Método | Auth |
 ----|-------|--------|------|
-`/convidado|3001| GET  | Logado |
-`/convidado|3001| POST | Logado |
-`/convidado?id_convidado={id}|3001| PUT  | Logado | 
-`/convidado?id_convidado={id}|3001| DELETE | Logado |
+/convidado|3001| GET  | Logado |
+/convidado|3001| POST | Logado |
+/convidado?id_convidado={id}|3001| PUT  | Logado | 
+/convidado?id_convidado={id}|3001| DELETE | Logado |
 
 <details>
-<summary>Expanda para encontra o que enviar no corpo da requisição</summary>
+<summary>Expanda para encontrar o que enviar no corpo da requisição</summary>
 ```json
 {
     "nome": "Ricardo",
@@ -294,14 +294,14 @@ Rota| Porta | Método | Auth |
 
 Rota| Porta | Método | Auth |
 ----|-------|--------|------|
-`/checkin|3002| GET  | Logado |
-`/checkin|3002| POST | Logado |
-`/checkin?id_checkin={id}|3002| PUT  | Logado | 
-`/checkin?id_checkin={id}|3002| DELETE | Logado |
+/checkin|3002| GET  | Logado |
+/checkin|3002| POST | Logado |
+/checkin?id_checkin={id}|3002| PUT  | Logado | 
+/checkin?id_checkin={id}|3002| DELETE | Logado |
 
 
 <details>
-<summary>Expanda para encontra o que enviar no corpo da requisição</summary>
+<summary>Expanda para encontrar o que enviar no corpo da requisição</summary>
 ```json
 {
     "convidado_idconvidado": 1
@@ -319,14 +319,14 @@ Rota| Porta | Método | Auth |
 
 Rota| Porta | Método | Auth |
 ----|-------|--------|------|
-`/acompanhante|3003| GET  | Logado |
-`/acompanhante|3003| POST | Logado |
-`/acompanhante?id_acompanhante={id}|3003| PUT  | Logado | 
-`/acompanhante?id_acompanhante={id}|3003| DELETE | Logado |
+/acompanhante|3003| GET  | Logado |
+/acompanhante|3003| POST | Logado |
+/acompanhante?id_acompanhante={id}|3003| PUT  | Logado | 
+/acompanhante?id_acompanhante={id}|3003| DELETE | Logado |
 
 
 <details>
-<summary>Expanda para encontra o que enviar no corpo da requisição</summary>
+<summary>Expanda para encontrar o que enviar no corpo da requisição</summary>
 ```json
 {
     "nome": "Ricardo",
@@ -337,10 +337,8 @@ Rota| Porta | Método | Auth |
 }
 
 ```
-
 </details>
 
----
 
 # Lógicas de autenticação
 
@@ -397,3 +395,5 @@ Auth: Bearer {token}
 /acompanhante | POST
 /acompanhante | PUT
 /acompanhante | DELETE
+
+
