@@ -27,10 +27,10 @@ O Intuito do projeto é criar um software que possa ser utilizado por usuários 
 
 O projeto foi divido em 4 APIs:
 
--API-Usuario;
--API-Convidado;
--API-Checkin;
--API-Acompanhante;
+- API-Usuario;
+- API-Convidado;
+- API-Checkin;
+- API-Acompanhante;
 
 Cada uma com seu banco de dados, exceto de convidado e acompanhante, que estão no mesmo banco de dados
 
@@ -227,6 +227,7 @@ DB_USER="root"
 DB_PASS="SUA_CHAVE_DO_BANCO"
 
 JWT_SECRET_KEY=WDBAWHDBWADWAKJDANKJSBDJWKJANWDKBWJHVDBJHAWBDKWAJDKJAWCDKWA!!!!!@@@!@!@!!@1212144
+Não utilize em produção
 ```
 ---
 
@@ -342,6 +343,12 @@ Rota| Porta | Método | Auth |
 ---
 
 # Lógicas de autenticação
+
+Quando é feito o login, é retornado uma chave JWT.
+
+Para as rodas protegidas funcionarem, atente-se em utilizá-la no Header ao enviar a requisição, semelhante a:
+
+Auth: Bearer {token}
 
 
 ## Rotas:
