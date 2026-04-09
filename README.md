@@ -212,6 +212,7 @@ SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 ``` 
 </details>
 
+---
 
 ### Chaves de ambiente:
 
@@ -232,13 +233,14 @@ DB_PASS="SUA_CHAVE_DO_BANCO"
 JWT_SECRET_KEY=WDBAWHDBWADWAKJDANKJSBDJWKJANWDKBWJHVDBJHAWBDKWAJDKJAWCDKWA!!!!!@@@!@!@!!@1212144
 Não utilize em produção
 ```
+
 ---
 
 # Uso no insomnia/postman:
 
 As rotas são as seguintes:
 
-*** Rota de usuários ***
+* Rota de usuários *
 
 Rota| Porta | Método | Auth |
 ----|-------|--------|------|
@@ -267,7 +269,7 @@ Rota| Porta | Método | Auth |
 
 ---
 
-*** Rota de convidados ***
+* Rota de convidados *
 
 Rota| Porta | Método | Auth |
 ----|-------|--------|------|
@@ -296,7 +298,7 @@ Rota| Porta | Método | Auth |
 
 
 
-*** Rota de Checkins ***
+* Rota de Checkins *
 
 Rota| Porta | Método | Auth |
 ----|-------|--------|------|
@@ -305,6 +307,7 @@ Rota| Porta | Método | Auth |
 /checkin?id_checkin={id}|3002| PUT  | Logado | 
 /checkin?id_checkin={id}|3002| DELETE | Logado |
 
+---
 
 <details>
 <summary>Expanda para encontrar o que enviar no corpo da requisição</summary>
@@ -322,7 +325,7 @@ Rota| Porta | Método | Auth |
 
 
 
-*** Rota de Acompanhantes ***
+* Rota de Acompanhantes *
 
 Rota| Porta | Método | Auth |
 ----|-------|--------|------|
