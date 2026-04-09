@@ -207,8 +207,8 @@ SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
-``` 
 </details>
+``` 
 
 ### Chaves de ambiente:
 
@@ -256,9 +256,9 @@ Rota| Porta | Método | Auth |
 	"cpf": "406.012.850-34"
 }
 
+</details>
 ```
 
-</details>
 
 ---
 
@@ -281,10 +281,10 @@ Rota| Porta | Método | Auth |
 	"cpf": "406.012.850-34",
     "cargo": "ceremonialista"
 }
+</details>
 
 ```
 
-</details>
 
 ---
 
@@ -308,8 +308,8 @@ Rota| Porta | Método | Auth |
 }
 
 ```
-
 </details>
+
 
 ---
 
@@ -336,8 +336,8 @@ Rota| Porta | Método | Auth |
     "convidado_idconvidado": 1
 }
 
-```
 </details>
+```
 
 
 # Lógicas de autenticação
