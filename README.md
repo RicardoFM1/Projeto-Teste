@@ -3,15 +3,15 @@
 O Intuito do projeto é criar um software que possa ser utilizado por usuários para cadastro de convidados e com afim de disponibilizar a opção de associar a um checkin.
 
 
-## O que foi utilizado:
+# O que foi utilizado:
 
-### Bibliotecas:
+## Bibliotecas:
 ``` "vlucas/phpdotenv": "^5.6",
         "firebase/php-jwt": "^7.0",
         "respect/validation": "^2.4"
 ```
 
-### Ferramentas:
+## Ferramentas:
 
 ``` - Composer;
     - Insomnia;
@@ -23,7 +23,7 @@ O Intuito do projeto é criar um software que possa ser utilizado por usuários 
 
 ---
 
-### Estrutura:
+# Estrutura:
 
 O projeto foi divido em 4 APIs:
 
@@ -41,7 +41,7 @@ db_checkin
 
 ---
 
-### Como testar o projeto: 
+# Como testar o projeto: 
 
 - Primeiramente clone o projeto pelo github, abrindo um bash no terminal.
 Dentro do bash digite e instale as dependências:
@@ -87,7 +87,7 @@ Rota de Acompanhante:
 
 ```
 
-## Uso no workbench:
+# Uso no workbench:
 - .SQL:
 
 
@@ -212,8 +212,9 @@ SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 ``` 
 </details>
 
+---
 
-### Chaves de ambiente:
+# Chaves de ambiente:
 
 Crie um arquivo no raiz do projeto chamado .env e coloque:
 
@@ -232,13 +233,14 @@ DB_PASS="SUA_CHAVE_DO_BANCO"
 JWT_SECRET_KEY=WDBAWHDBWADWAKJDANKJSBDJWKJANWDKBWJHVDBJHAWBDKWAJDKJAWCDKWA!!!!!@@@!@!@!!@1212144
 Não utilize em produção
 ```
+
 ---
 
 # Uso no insomnia/postman:
 
 As rotas são as seguintes:
 
-*** Rota de usuários ***
+* Rota de usuários 
 
 Rota| Porta | Método | Auth |
 ----|-------|--------|------|
@@ -267,7 +269,7 @@ Rota| Porta | Método | Auth |
 
 ---
 
-*** Rota de convidados ***
+* Rota de convidados 
 
 Rota| Porta | Método | Auth |
 ----|-------|--------|------|
@@ -296,7 +298,7 @@ Rota| Porta | Método | Auth |
 
 
 
-*** Rota de Checkins ***
+* Rota de Checkins 
 
 Rota| Porta | Método | Auth |
 ----|-------|--------|------|
@@ -305,6 +307,7 @@ Rota| Porta | Método | Auth |
 /checkin?id_checkin={id}|3002| PUT  | Logado | 
 /checkin?id_checkin={id}|3002| DELETE | Logado |
 
+---
 
 <details>
 <summary>Expanda para encontrar o que enviar no corpo da requisição</summary>
@@ -322,7 +325,7 @@ Rota| Porta | Método | Auth |
 
 
 
-*** Rota de Acompanhantes ***
+* Rota de Acompanhantes 
 
 Rota| Porta | Método | Auth |
 ----|-------|--------|------|
@@ -357,7 +360,7 @@ Para as rodas protegidas funcionarem, atente-se em utilizá-la no Header ao envi
 Auth: Bearer {token}
 
 
-## Rotas:
+# Rotas:
 - Rota de usuário em:
 
 * PRECISA DE ADMIN:
