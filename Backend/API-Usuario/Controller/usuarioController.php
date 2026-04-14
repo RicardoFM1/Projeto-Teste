@@ -101,7 +101,7 @@ class UsuarioController
     public function atualizarUsuario()
     {
         try {
-            // Não precisa validar admin ou não porque dentro da função já valida
+            $this->apenasAdmin();
             $usuarioDados = json_decode(file_get_contents("php://input"), true) ?? null;
             $emailUsuario = $_GET['email_usuario'] ?? null;
             $tokenJWT = $this->pegarToken();
@@ -121,7 +121,7 @@ class UsuarioController
     public function deletarUsuario()
     {
         try {
-
+            $this->apenasAdmin();
             $emailUsuario = $_GET['email_usuario'] ?? null;
             $tokenJWT = $this->pegarToken();
 
