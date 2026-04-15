@@ -1,5 +1,6 @@
 <?php
 
+use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
@@ -58,15 +59,15 @@ class UsuarioService
             }
 
             return JWT::decode($partesToken[1], new Key($this->chaveSecreta, 'HS256'));
-        } catch (Exception $e) {
-            throw new Exception('Token inválido', 401);
+        } catch (ExpiredException $e) {
+            throw new Exception('Token expirado', 401);
         }
     }
 
 
     public function listarUsuarios()
     {
-        $query = $this->usuarioDb->query("SELECT * FROM usuario");
+        $query = $this->usuarioDb->query("SELECT nome, email, cpf, cargo FROM usuario");
         $usuarios = $query->fetchAll();
 
         return [
