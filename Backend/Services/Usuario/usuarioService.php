@@ -1,20 +1,18 @@
 <?php
 
-use Firebase\JWT\ExpiredException;
 use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 
-require_once __DIR__ . "/../Connection/usuarioConnection.php";
+
+require_once __DIR__ . "/../../Connection/connection.php";
 
 class UsuarioService
 {
-    private $usuarioDb;
-    private $chaveSecreta;
+    private $Db;
+
 
     public function __construct()
     {
-        $this->usuarioDb = dbUsuarioConnection();
-        $this->chaveSecreta = $_ENV['JWT_SECRET_KEY'];
+        $this->Db = dbConnection();
     }
 
     public function buscarUsuarioPorEmail($emailUsuario)
@@ -23,7 +21,7 @@ class UsuarioService
             throw new Exception('Email do usuário não fornecido', 400);
         }
 
-        $buscarUsuario = $this->usuarioDb->prepare("SELECT * FROM usuario WHERE email = :email");
+        $buscarUsuario = $this->Db->prepare("SELECT * FROM usuario WHERE email = :email");
         $buscarUsuario->execute([
             ':email' => $emailUsuario
         ]);
@@ -44,30 +42,10 @@ class UsuarioService
         ];
     }
 
-    public function validarToken($tokenJWT)
-    {
-        if (empty($tokenJWT)) {
-            throw new Exception('Usuário não autenticado', 401);
-        }
-
-        try {
-
-            $partesToken = explode(' ', $tokenJWT);
-
-            if (count($partesToken) !== 2) {
-                throw new Exception('Formato de token inválido, aceito apenas: Bearer {token}', 401);
-            }
-
-            return JWT::decode($partesToken[1], new Key($this->chaveSecreta, 'HS256'));
-        } catch (ExpiredException $e) {
-            throw new Exception('Token expirado', 401);
-        }
-    }
-
 
     public function listarUsuarios()
     {
-        $query = $this->usuarioDb->query("SELECT nome, email, cpf, cargo FROM usuario");
+        $query = $this->Db->query("SELECT nome, email, cpf, cargo FROM usuario");
         $usuarios = $query->fetchAll();
 
         return [
@@ -83,7 +61,7 @@ class UsuarioService
 
             $usuarioDados['cpf'] = preg_replace('/\D/', '', $usuarioDados['cpf']);
 
-            $criarUsuario = $this->usuarioDb->prepare("INSERT INTO usuario (nome, email, senha, cpf, cargo)
+            $criarUsuario = $this->Db->prepare("INSERT INTO usuario (nome, email, senha, cpf, cargo)
             VALUES (:nome, :email, :senha, :cpf, :cargo)");
 
             $criarUsuario->execute([
@@ -112,7 +90,7 @@ class UsuarioService
     }
 
 
-    public function fazerLogin($usuarioDados)
+    public function fazerLogin($usuarioDados, $chaveSecreta)
     {
         $usuario = $this->buscarUsuarioPorEmail($usuarioDados['email']);
 
@@ -135,7 +113,7 @@ class UsuarioService
             ]
         ];
 
-        $jwt = JWT::encode($payload, $this->chaveSecreta, 'HS256');
+        $jwt = JWT::encode($payload, $chaveSecreta, 'HS256');
 
         return [
             'sucesso' => true,
@@ -145,16 +123,12 @@ class UsuarioService
     }
 
 
-    public function atualizarUsuario($usuarioDados, $emailUsuario, $tokenJWT)
+    public function atualizarUsuario($usuarioDados, $emailUsuario)
     {
         try {
 
             if (empty($emailUsuario)) {
                 throw new Exception('Email do usuário não fornecido', 400);
-            }
-
-            if (empty($tokenJWT)) {
-                throw new Exception('Usuário não autenticado', 401);
             }
 
             $usuarioDados['cpf'] = preg_replace('/\D/', '', $usuarioDados['cpf']);
@@ -165,13 +139,13 @@ class UsuarioService
                 throw new Exception($usuario['mensagem'], $usuario['codigo']);
             }
 
-            $jwt = $this->validarToken($tokenJWT);
 
-            if ($jwt->dados->cargo_usuario !== "admin" && $jwt->dados->id_usuario !== $usuario['dados']['id_usuario']) {
-                throw new Exception('Sem permissão para atualizar esse usuário', 403);
-            }
+            // Isso não precisa existir em usuário, apenas em CHECKIN
+            // if ($tokenJWT->dados->cargo_usuario !== "admin" && $tokenJWT->dados->id_usuario !== $usuario['dados']['id_usuario']) {
+            //     throw new Exception('Sem permissão para atualizar esse usuário', 403);
+            // }
 
-            $atualizarUsuario = $this->usuarioDb->prepare("UPDATE usuario SET nome = :nome, email = :email,
+            $atualizarUsuario = $this->Db->prepare("UPDATE usuario SET nome = :nome, email = :email,
             senha = :senha, cpf = :cpf, cargo = :cargo WHERE email = :email_antigo");
 
             $atualizarUsuario->execute([
@@ -199,28 +173,27 @@ class UsuarioService
         }
     }
 
-    public function deletarUsuario ($emailUsuario, $tokenJWT){
+    public function deletarUsuario($emailUsuario)
+    {
         if (empty($emailUsuario)) {
-                throw new Exception('Email do usuário não fornecido', 400);
-            }
+            throw new Exception('Email do usuário não fornecido', 400);
+        }
 
-            if (empty($tokenJWT)) {
-                throw new Exception('Usuário não autenticado', 401);
-            }
 
         $usuario = $this->buscarUsuarioPorEmail($emailUsuario);
 
-        if($usuario['sucesso'] === false){
+        if ($usuario['sucesso'] === false) {
             throw new Exception($usuario['mensagem'], $usuario['codigo']);
         }
 
-        $jwt = $this->validarToken($tokenJWT);
 
-        if ($jwt->dados->cargo_usuario !== "admin" && $jwt->dados->id_usuario !== $usuario['dados']['id_usuario']) {
-                throw new Exception('Sem permissão para deletar esse usuário', 403);
-            }
 
-        $deletarUsuario = $this->usuarioDb->prepare('DELETE FROM usuario WHERE email = :email_antigo');
+        // Isso não precisa existir em usuário, apenas em CHECKIN
+        // if ($tokenJWT->dados->cargo_usuario !== "admin" && $tokenJWT->dados->id_usuario !== $usuario['dados']['id_usuario']) {
+        //     throw new Exception('Sem permissão para atualizar esse usuário', 403);
+        // }
+
+        $deletarUsuario = $this->Db->prepare('DELETE FROM usuario WHERE email = :email_antigo');
         $deletarUsuario->execute([
             ':email_antigo' => $emailUsuario
         ]);

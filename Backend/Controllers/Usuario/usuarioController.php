@@ -1,5 +1,8 @@
 <?php
 
+use Firebase\JWT\ExpiredException;
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
@@ -10,47 +13,59 @@ class UsuarioController
 {
 
     protected $usuarioService;
+    protected $chaveSecreta;
 
     public function __construct()
     {
         $this->usuarioService = new UsuarioService();
+        $this->chaveSecreta = $_ENV['JWT_SECRET_KEY'];
     }
 
-    public function pegarToken()
+
+    public function validarToken()
     {
-        $token = null;
+        $tokenJWT = null;
 
         if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $token = $_SERVER['HTTP_AUTHORIZATION'];
+            $tokenJWT = $_SERVER['HTTP_AUTHORIZATION'];
         }
         if (isset($_SERVER['AUTHORIZATION'])) {
-            $token = $_SERVER['AUTHORIZATION'];
+            $tokenJWT = $_SERVER['AUTHORIZATION'];
         }
 
-        return $token;
-    }
-
-    public function validarMiddleware()
-    {
-        try {
-
-            $token = $this->pegarToken();
-
-            return $this->usuarioService->validarToken($token);
-        } catch (Exception $e) {
-            http_response_code($e->getCode() ?: 500);
+        if (empty($tokenJWT)) {
+            http_response_code(401);
             echo json_encode([
                 'sucesso' => false,
-                'mensagem' => $e->getMessage(),
-
+                'mensagem' => 'Usuário não autenticado'
             ]);
-            exit;
+        }
+
+        try {
+
+            $partesToken = explode(' ', $tokenJWT);
+
+            if (count($partesToken) !== 2) {
+                http_response_code(401);
+                echo json_encode([
+                    'sucesso' => false,
+                    'mensagem' => 'Token inválido'
+                ]);
+            }
+
+            return JWT::decode($partesToken[1], new Key($this->chaveSecreta, 'HS256'));
+        } catch (ExpiredException $e) {
+            http_response_code(401);
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => 'Token expirado'
+            ]);
         }
     }
 
     public function apenasAdmin()
     {
-        $jwt = $this->validarMiddleware();
+        $jwt = $this->validarToken();
         if ($jwt->dados->cargo_usuario !== "admin") {
             http_response_code(403);
             echo json_encode([
@@ -131,7 +146,7 @@ class UsuarioController
 
             $usuarioDados = json_decode(file_get_contents("php://input"), true) ?? null;
             http_response_code(200);
-            echo json_encode($this->usuarioService->fazerLogin($usuarioDados));
+            echo json_encode($this->usuarioService->fazerLogin($usuarioDados, $this->chaveSecreta));
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 500);
             echo json_encode([
@@ -148,11 +163,11 @@ class UsuarioController
             $this->apenasAdmin();
             $usuarioDados = json_decode(file_get_contents("php://input"), true) ?? null;
             $emailUsuario = $_GET['email_usuario'] ?? null;
-            $tokenJWT = $this->pegarToken();
+            $this->validarToken();
 
             $this->validarDados($usuarioDados);
             http_response_code(200);
-            echo json_encode($this->usuarioService->atualizarUsuario($usuarioDados, $emailUsuario, $tokenJWT));
+            echo json_encode($this->usuarioService->atualizarUsuario($usuarioDados, $emailUsuario));
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 500);
             echo json_encode([
@@ -168,10 +183,11 @@ class UsuarioController
         try {
             $this->apenasAdmin();
             $emailUsuario = $_GET['email_usuario'] ?? null;
-            $tokenJWT = $this->pegarToken();
+            $this->validarToken();
+
 
             http_response_code(200);
-            echo json_encode($this->usuarioService->deletarUsuario($emailUsuario, $tokenJWT));
+            echo json_encode($this->usuarioService->deletarUsuario($emailUsuario));
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 500);
             echo json_encode([
