@@ -7,7 +7,7 @@ use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
 
-require_once __DIR__ . "/../Service/usuarioService.php";
+require_once __DIR__ . "/../../Services/Usuario/usuarioService.php";
 
 class UsuarioController
 {
@@ -39,6 +39,7 @@ class UsuarioController
                 'sucesso' => false,
                 'mensagem' => 'Usuário não autenticado'
             ]);
+            exit;
         }
 
         try {
@@ -51,6 +52,7 @@ class UsuarioController
                     'sucesso' => false,
                     'mensagem' => 'Token inválido'
                 ]);
+                exit;
             }
 
             return JWT::decode($partesToken[1], new Key($this->chaveSecreta, 'HS256'));
@@ -60,6 +62,7 @@ class UsuarioController
                 'sucesso' => false,
                 'mensagem' => 'Token expirado'
             ]);
+            exit;
         }
     }
 
@@ -80,7 +83,7 @@ class UsuarioController
     {
         $cargosPermitidos = ['admin', 'ceremonialista'];
 
-        $esquema = v::key('nome', v::stringVal()->notEmpty()->length(4, 50))
+        $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
             ->key('email', v::email())
             ->key('senha', v::stringVal()->length(8, 50))
             ->key('cpf', v::cpf())
@@ -90,7 +93,7 @@ class UsuarioController
             $esquema->assert($usuarioDados);
         } catch (NestedValidationException $e) {
             $mensagemPersonalizada = [
-                'nome' => 'Nome inválida, min 4, max 50',
+                'nome' => 'Nome inválido, min 1, max 45',
                 'email' => 'Email inválido',
                 'senha' => 'Senha inválida, min 8, max 50',
                 'cpf' => 'Cpf inválido',
@@ -119,6 +122,7 @@ class UsuarioController
         $this->apenasAdmin();
         http_response_code(200);
         echo json_encode($this->usuarioService->listarUsuarios());
+        exit;
     }
 
     public function criarUsuario()
@@ -130,6 +134,7 @@ class UsuarioController
             $this->validarDados($usuarioDados);
             http_response_code(201);
             echo json_encode($this->usuarioService->criarUsuario($usuarioDados));
+            exit;
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 500);
             echo json_encode([
@@ -147,6 +152,7 @@ class UsuarioController
             $usuarioDados = json_decode(file_get_contents("php://input"), true) ?? null;
             http_response_code(200);
             echo json_encode($this->usuarioService->fazerLogin($usuarioDados, $this->chaveSecreta));
+            exit;
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 500);
             echo json_encode([
@@ -168,6 +174,7 @@ class UsuarioController
             $this->validarDados($usuarioDados);
             http_response_code(200);
             echo json_encode($this->usuarioService->atualizarUsuario($usuarioDados, $emailUsuario));
+            exit;
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 500);
             echo json_encode([
@@ -188,6 +195,7 @@ class UsuarioController
 
             http_response_code(200);
             echo json_encode($this->usuarioService->deletarUsuario($emailUsuario));
+            exit;
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 500);
             echo json_encode([

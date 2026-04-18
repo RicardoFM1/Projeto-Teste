@@ -1,8 +1,9 @@
 <?php
 
 use Dotenv\Dotenv;
-require_once __DIR__ . "/../../vendor/autoload.php";
-require_once __DIR__ . "/../Controller/usuarioController.php";
+require_once __DIR__ . "/../vendor/autoload.php";
+require_once __DIR__ . "/../Controllers/Usuario/usuarioController.php";
+require_once __DIR__ . "/../Controllers/Convidado/convidadoController.php";
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
@@ -24,6 +25,7 @@ if($metodoRequisicao === "OPTIONS"){
     exit;
 }
 
+// Rotas Usuário:
 if($caminhoRequisicao === "/usuario"){
     $usuarioController = new UsuarioController();
    
@@ -53,3 +55,82 @@ if($caminhoRequisicao === "/usuario/login"){
     }
 }
 
+
+// Rotas Convidado:
+
+if($caminhoRequisicao === "/convidado"){
+    $convidadoController = new ConvidadoController();
+
+    if($metodoRequisicao === "GET"){
+        $convidadoController->listarConvidados();
+    }
+    
+    if($metodoRequisicao === "POST"){
+        $convidadoController->criarConvidado();
+    }
+
+    if($metodoRequisicao === "PUT"){
+        $convidadoController->atualizarConvidado();
+    }
+
+    if($metodoRequisicao === "DELETE"){
+        $convidadoController->deletarConvidado();
+    }
+}
+
+
+// Rotas Mesa:
+
+if($caminhoRequisicao === "/mesa"){
+    $mesaController = new MesaController();
+
+    if($metodoRequisicao === "GET"){
+        $mesaController->listarMesas();
+    }
+    
+    if($metodoRequisicao === "POST"){
+        $mesaController->criarMesa();
+    }
+
+    if($metodoRequisicao === "PUT"){
+        $mesaController->atualizarMesa();
+    }
+
+    if($metodoRequisicao === "DELETE"){
+        $mesaController->deletarMesa();
+    }
+}
+
+// Rotas Checkin: 
+
+if($caminhoRequisicao === "/checkin"){
+    $checkinController = new CheckinController();
+
+    if($metodoRequisicao === "GET"){
+        $checkinController->listarCheckins();
+    }
+    
+    if($metodoRequisicao === "POST"){
+        $checkinController->criarCheckin();
+    }
+
+    if($metodoRequisicao === "PUT"){
+        $checkinController->atualizarCheckin();
+    }
+
+    if($metodoRequisicao === "DELETE"){
+        $checkinController->deletarCheckin();
+    }
+}
+
+// Rotas Dashboard:
+
+if($caminhoRequisicao === "/dashboard"){
+    $dashboardController = new DashboardController();
+
+    if($metodoRequisicao === "GET"){
+        $dashboardController->listarDashboard();
+    }
+    
+    
+}

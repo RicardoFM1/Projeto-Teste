@@ -7,17 +7,17 @@ use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
 
-require_once __DIR__ . "/../../Services/Convidado/convidadoService.php";
+require_once __DIR__ . "/../../Services/Acompanhante/acompanhanteService.php";
 
-class ConvidadoController
+class AcompanhanteController
 {
 
-    protected $convidadoService;
+    protected $acompanhanteService;
     protected $chaveSecreta;
 
     public function __construct()
     {
-        $this->convidadoService = new ConvidadoService();
+        $this->acompanhanteService = new AcompanhanteService();
         $this->chaveSecreta = $_ENV['JWT_SECRET_KEY'];
     }
 
@@ -68,29 +68,23 @@ class ConvidadoController
 
 
 
-    public function validarDados($convidadoDados)
+    public function validarDados($acompanhanteDados)
     {
-        $confirmacaoPermitida = ['confirmado', 'não confirmado', 'cancelado'];
 
         $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
             ->key('sobrenome', v::stringVal()->notEmpty()->length(1, 45))
-            ->key('email', v::email())
-            ->key('telefone', v::phone())
             ->key('cpf', v::cpf())
-            ->key('confirmacao', v::in($confirmacaoPermitida))
-            ->key('categoria', v::stringVal()->notEmpty());
+            ->key('idade', v::intVal());
 
         try {
-            $esquema->assert($convidadoDados);
+            $esquema->assert($acompanhanteDados);
         } catch (NestedValidationException $e) {
             $mensagemPersonalizada = [
-                'nome' => 'Nome inválido, min 1, max 45',
-                'sobrenome' => 'sobrenome inválido, min 1, max 45',
-                'email' => 'Email inválido',
-                'telefone' => 'Telefone inválido',
+                'nome' => 'Nome inválido, min 1, max 50',
+                'sobrenome' => 'sobrenome inválido, min 1, max 50',
                 'cpf' => 'Cpf inválido',
-                'confirmacao' => 'Confirmação inválida, é aceito apenas confirmado, não confirmado ou cancelado',
-                'categoria' => 'Categoria inválida'
+                'idade' => 'Idade inválida'
+                
             ];
 
             $mensagemOriginal = $e->getMessages();
@@ -110,24 +104,24 @@ class ConvidadoController
         }
     }
     // Formatar cpf só quando for enviar para o banco, ou seja, no service em criar e atualizar.
-    public function listarConvidados()
+    public function listarAcompanhantes()
     {
         $this->validarToken();
         // Aqui só valida token para ver se está autenticado.
         http_response_code(200);
-        echo json_encode($this->convidadoService->listarConvidados());
+        echo json_encode($this->acompanhanteService->listarAcompanhantes());
         exit;
     }
 
-    public function criarConvidado()
+    public function criarAcompanhante()
     {
         try {
 
-            $convidadoDados = json_decode(file_get_contents("php://input"), true) ?? null;
+            $acompanhanteDados = json_decode(file_get_contents("php://input"), true) ?? null;
             $this->validarToken();
-            $this->validarDados($convidadoDados);
+            $this->validarDados($acompanhanteDados);
             http_response_code(201);
-            echo json_encode($this->convidadoService->criarConvidado($convidadoDados));
+            echo json_encode($this->acompanhanteService->criarAcompanhante($acompanhanteDados));
             exit;
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 500);
@@ -141,17 +135,17 @@ class ConvidadoController
 
 
 
-    public function atualizarConvidado()
+    public function atualizarAcompanhante()
     {
         try {
 
-            $convidadoDados = json_decode(file_get_contents("php://input"), true) ?? null;
-            $emailConvidado = $_GET['email_convidado'] ?? null;
+            $acompanhanteDados = json_decode(file_get_contents("php://input"), true) ?? null;
+            $idAcompanhante = $_GET['id_acompanhante'] ?? null;
             $this->validarToken();
 
-            $this->validarDados($convidadoDados);
+            $this->validarDados($acompanhanteDados);
             http_response_code(200);
-            echo json_encode($this->convidadoService->atualizarConvidado($convidadoDados, $emailConvidado));
+            echo json_encode($this->acompanhanteService->atualizarAcompanhante($acompanhanteDados, $idAcompanhante));
             exit;
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 500);
@@ -163,16 +157,16 @@ class ConvidadoController
         }
     }
 
-    public function deletarConvidado()
+    public function deletarAcompanhante()
     {
         try {
 
-            $emailConvidado = $_GET['email_convidado'] ?? null;
+            $idAcompanhante = $_GET['id_acompanhante'] ?? null;
             $this->validarToken();
 
 
             http_response_code(200);
-            echo json_encode($this->convidadoService->deletarConvidado($emailConvidado));
+            echo json_encode($this->acompanhanteService->deletarAcompanhante($idAcompanhante));
             exit;
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 500);

@@ -7,17 +7,17 @@ use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
 
-require_once __DIR__ . "/../../Services/Convidado/convidadoService.php";
+require_once __DIR__ . "/../../Services/Checkin/checkinService.php";
 
-class ConvidadoController
+class CheckinController
 {
 
-    protected $convidadoService;
+    protected $checkinService;
     protected $chaveSecreta;
 
     public function __construct()
     {
-        $this->convidadoService = new ConvidadoService();
+        $this->checkinService = new CheckinService();
         $this->chaveSecreta = $_ENV['JWT_SECRET_KEY'];
     }
 
@@ -68,29 +68,16 @@ class ConvidadoController
 
 
 
-    public function validarDados($convidadoDados)
+    public function validarDados($checkinDados)
     {
-        $confirmacaoPermitida = ['confirmado', 'não confirmado', 'cancelado'];
 
-        $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
-            ->key('sobrenome', v::stringVal()->notEmpty()->length(1, 45))
-            ->key('email', v::email())
-            ->key('telefone', v::phone())
-            ->key('cpf', v::cpf())
-            ->key('confirmacao', v::in($confirmacaoPermitida))
-            ->key('categoria', v::stringVal()->notEmpty());
+        $esquema = v::key('convidado_idconvidado', v::intVal()->notEmpty());
 
         try {
-            $esquema->assert($convidadoDados);
+            $esquema->assert($checkinDados);
         } catch (NestedValidationException $e) {
             $mensagemPersonalizada = [
-                'nome' => 'Nome inválido, min 1, max 45',
-                'sobrenome' => 'sobrenome inválido, min 1, max 45',
-                'email' => 'Email inválido',
-                'telefone' => 'Telefone inválido',
-                'cpf' => 'Cpf inválido',
-                'confirmacao' => 'Confirmação inválida, é aceito apenas confirmado, não confirmado ou cancelado',
-                'categoria' => 'Categoria inválida'
+                'convidado_idconvidado' => 'Convidado inválido'
             ];
 
             $mensagemOriginal = $e->getMessages();
@@ -110,24 +97,24 @@ class ConvidadoController
         }
     }
     // Formatar cpf só quando for enviar para o banco, ou seja, no service em criar e atualizar.
-    public function listarConvidados()
+    public function listarCheckins()
     {
         $this->validarToken();
         // Aqui só valida token para ver se está autenticado.
         http_response_code(200);
-        echo json_encode($this->convidadoService->listarConvidados());
+        echo json_encode($this->checkinService->listarCheckins());
         exit;
     }
 
-    public function criarConvidado()
+    public function criarCheckin()
     {
         try {
 
-            $convidadoDados = json_decode(file_get_contents("php://input"), true) ?? null;
-            $this->validarToken();
-            $this->validarDados($convidadoDados);
+            $checkinDados = json_decode(file_get_contents("php://input"), true) ?? null;
+            $tokenJWT = $this->validarToken();
+            $this->validarDados($checkinDados);
             http_response_code(201);
-            echo json_encode($this->convidadoService->criarConvidado($convidadoDados));
+            echo json_encode($this->checkinService->criarCheckin($checkinDados, $tokenJWT));
             exit;
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 500);
@@ -141,17 +128,17 @@ class ConvidadoController
 
 
 
-    public function atualizarConvidado()
+    public function atualizarCheckin()
     {
         try {
 
-            $convidadoDados = json_decode(file_get_contents("php://input"), true) ?? null;
-            $emailConvidado = $_GET['email_convidado'] ?? null;
-            $this->validarToken();
+            $checkinDados = json_decode(file_get_contents("php://input"), true) ?? null;
+            $idCheckin = $_GET['id_checkin'] ?? null;
+            $tokenJWT = $this->validarToken();
 
-            $this->validarDados($convidadoDados);
+            $this->validarDados($checkinDados);
             http_response_code(200);
-            echo json_encode($this->convidadoService->atualizarConvidado($convidadoDados, $emailConvidado));
+            echo json_encode($this->checkinService->atualizarCheckin($checkinDados, $idCheckin, $tokenJWT));
             exit;
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 500);
@@ -163,16 +150,16 @@ class ConvidadoController
         }
     }
 
-    public function deletarConvidado()
+    public function deletarCheckin()
     {
         try {
 
-            $emailConvidado = $_GET['email_convidado'] ?? null;
-            $this->validarToken();
+            $idCheckin = $_GET['id_checkin'] ?? null;
+            $tokenJWT = $this->validarToken();
 
 
             http_response_code(200);
-            echo json_encode($this->convidadoService->deletarConvidado($emailConvidado));
+            echo json_encode($this->checkinService->deletarCheckin($idCheckin, $tokenJWT));
             exit;
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 500);
