@@ -85,7 +85,7 @@ class UsuarioService
                 throw new Exception('Cpf já em uso', 409);
             }
 
-            throw new Exception('Erro ao criar usuário', 500);
+            throw new Exception('Erro ao criar usuário' . $e->getMessage(), 500);
         }
     }
 

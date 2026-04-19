@@ -1,7 +1,8 @@
 <?php
 
 
-class DashboardService {
+class DashboardService
+{
     protected $usuarioService;
     protected $convidadoService;
     protected $acompanhanteService;
@@ -10,102 +11,111 @@ class DashboardService {
 
     public function __construct()
     {
-       $this->usuarioService = new UsuarioService();
-       $this->convidadoService = new ConvidadoService();
-       $this->acompanhanteService = new AcompanhanteService();
-       $this->mesaService = new MesaService();
-       $this->checkinService = new CheckinService();
+        $this->usuarioService = new UsuarioService();
+        $this->convidadoService = new ConvidadoService();
+        $this->acompanhanteService = new AcompanhanteService();
+        $this->mesaService = new MesaService();
+        $this->checkinService = new CheckinService();
     }
 
 
-    public function listarDashboard () {
-        
-        $usuarios = $this->usuarioService->listarUsuarios();
-        $convidados = $this->convidadoService->listarConvidados();
-        $acompanhantes = $this->acompanhanteService->listarAcompanhantes();
-        $mesas = $this->mesaService->listarMesas();
-        $checkins = $this->checkinService->listarCheckins();
+    public function listarDashboard()
+    {
 
-        
-        $usuariosAdmin = null;
+        $resUsuarios = $this->usuarioService->listarUsuarios();
+        $resConvidados = $this->convidadoService->listarConvidados();
+        $resAcompanhantes = $this->acompanhanteService->listarAcompanhantes();
+        $resMesas = $this->mesaService->listarMesas();
+        $resCheckins = $this->checkinService->listarCheckins();
 
-        foreach ($usuarios as $usuario){
-            if($usuario['dados']['cargo'] === 'admin'){
-                $usuariosAdmin = $usuariosAdmin + 1;
+
+        $usuariosAdmin = 0;
+        $convidadosConfirmados = 0;
+        $convidadosNaoConfirmados = 0;
+        $convidadosCancelados = 0;
+        $acompanhantesMaioresDeIdade = 0;
+        $acompanhantesMenoresDeIdade = 0;
+        $mesasComRestricao = 0;
+
+
+
+        foreach ($resUsuarios['dados'] as $usuario) {
+
+            if ($usuario['cargo'] === 'admin') {
+                $usuariosAdmin++;
             }
         }
 
-        $convidadosConfirmados = null;
-        $convidadosNaoConfirmados = null;
-        $convidadosCancelados = null;
 
-        foreach ($convidados as $convidado){
-            if($convidado['dados']['confirmacao'] === 'confirmado'){
-                $convidadosConfirmados = $convidadosConfirmados + 1;
-            }
 
-            if($convidado['dados']['confirmacao'] === 'não confirmado'){
-                $convidadosNaoConfirmados = $convidadosNaoConfirmados + 1;
-            }
 
-            if($convidado['dados']['confirmacao'] === 'cancelado'){
-                $convidadosCancelados = $convidadosCancelados + 1;
+        foreach ($resConvidados['dados'] as $convidado) {
+            if ($convidado['confirmacao'] === 'confirmado') {
+                $convidadosConfirmados++;
+            } elseif ($convidado['confirmacao'] === 'não confirmado') {
+                $convidadosNaoConfirmados++;
+            } elseif ($convidado['confirmacao'] === 'cancelado') {
+                $convidadosCancelados++;
             }
         }
 
-        $acompanhantesMaioresDeIdade = null;
-        $acompanhantesMenoresDeIdade = null;
 
 
-        foreach($acompanhantes as $acompanhante){
-            if($acompanhante['dados']['idade'] >= 18){
-                $acompanhantesMaioresDeIdade = $acompanhantesMaioresDeIdade + 1;
+
+
+
+
+
+        foreach ($resAcompanhantes['dados'] as $acompanhante) {
+            if ($acompanhante['idade'] >= 18) {
+                $acompanhantesMaioresDeIdade++;
             }
 
-            if($acompanhante['dados']['idade'] < 18){
-                $acompanhantesMenoresDeIdade = $acompanhantesMenoresDeIdade + 1;
+            if ($acompanhante['idade'] < 18) {
+                $acompanhantesMenoresDeIdade++;
+            }
+        }
+
+
+        foreach ($resMesas['dados'] as $mesa) {
+            if (!empty($mesa['restricao'])) {
+                $mesasComRestricao++;
             }
         }
 
-        $mesasComRestricao = null;
 
-        foreach ($mesas as $mesa){
-            if(!empty($mesas['dados']['restricao'])){
-                $mesasComRestricao = $mesasComRestricao + 1;
-            }
-        }
 
 
         return [
             'sucesso' => true,
             'dados' => [
                 'usuarios' => [
-                    $usuarios,
-                    'total_usuarios' => count($usuarios),
+                    'listagem' => $resUsuarios['dados'] ?? 'Nenhum usuário',
+                    'total_usuarios' => count($resUsuarios['dados']),
                     'admin' => $usuariosAdmin
                 ],
                 'convidados' => [
-                    $convidados,
-                    'total_convidados' => count($convidados),
-                    'confirmados' => $convidadosConfirmados, 
+                    'listagem' => $resConvidados['dados'] ?? 'Nenhum convidado',
+                    'total_convidados' => count($resConvidados['dados']),
+                    'confirmados' => $convidadosConfirmados,
                     'não confirmados' => $convidadosNaoConfirmados,
                     'cancelados' => $convidadosCancelados
                 ],
                 'acompanhantes' => [
-                    $acompanhantes,
-                    'total_acompanhantes' => count($acompanhantes),
+                    'listagem' => $resAcompanhantes['dados']  ?? 'Nenhum acompanhante',
+                    'total_acompanhantes' => count($resAcompanhantes['dados']),
                     'maiores_de_idade' => $acompanhantesMaioresDeIdade,
                     'menores_de_idade' => $acompanhantesMenoresDeIdade
                 ],
                 'mesas' => [
-                    $mesas,
-                    'total_mesas' => count($mesas),
+                    'listagem' => $resMesas['dados']  ?? 'Nenhuma mesa',
+                    'total_mesas' => count($resMesas['dados']),
                     'mesas_com_restricao' => $mesasComRestricao
                     // Fazer com capacidade também, mesas lotadas e disponíveis
                 ],
                 'checkins' => [
-                    $checkins,
-                    'total_checkins' => count($checkins)
+                    'listagem' => $resCheckins['dados']  ?? 'Nenhum checkin',
+                    'total_checkins' => count($resCheckins['dados'])
                 ]
             ]
         ];
