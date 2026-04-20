@@ -1,2 +1,5 @@
-.vendor
+**/vendor/
+/vendor/
+vendor/
 .env
+**/node_modules/
