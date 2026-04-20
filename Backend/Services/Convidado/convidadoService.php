@@ -91,6 +91,10 @@ class ConvidadoService
                 throw new Exception('Cpf já em uso', 409);
             }
 
+            if (str_contains($e->getMessage(), 'fk_convidado_mesa')) {
+                throw new Exception('Mesa referenciada não encontrada', 404);
+            }
+
             throw new Exception('Erro ao criar convidado', 500);
         }
     }
@@ -146,12 +150,17 @@ class ConvidadoService
                 throw new Exception('Cpf já em uso', 409);
             }
 
+            if(str_contains($e->getMessage(), 'fk_convidado_mesa')){
+                throw new Exception('Mesa referenciada não encontrada', 404);
+            }
+
             throw new Exception('Erro ao criar convidado', 500);
         }
     }
 
     public function deletarConvidado($emailConvidado)
     {
+        
         if (empty($emailConvidado)) {
             throw new Exception('Email do convidado não fornecido', 400);
         }

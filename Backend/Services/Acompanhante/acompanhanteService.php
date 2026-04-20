@@ -81,6 +81,10 @@ class AcompanhanteService
                 throw new Exception('Cpf já em uso', 409);
             }
 
+            if(str_contains($e->getMessage(), 'fk_acompanhante_convidado')){
+                throw new Exception('Convidado referenciado não encontrado', 404);
+            }
+
             throw new Exception('Erro ao criar acompanhante', 500);
         }
     }
@@ -130,6 +134,10 @@ class AcompanhanteService
         } catch (PDOException $e) {
             if (str_contains($e->getMessage(), 'cpf')) {
                 throw new Exception('Cpf já em uso', 409);
+            }
+
+             if(str_contains($e->getMessage(), 'fk_acompanhante_convidado')){
+                throw new Exception('Convidado referenciado não encontrado', 404);
             }
 
             throw new Exception('Erro ao criar acompanhante', 500);

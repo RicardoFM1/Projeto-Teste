@@ -78,6 +78,14 @@ class CheckinService
                 throw new Exception('Checkin já existente', 409);
             }
 
+            if(str_contains($e->getMessage(), 'fk_checkin_usuario')){
+                throw new Exception('Usuário referenciado não encontrado', 404);
+            }
+
+            if(str_contains($e->getMessage(), 'fk_checkin_convidado')){
+                throw new Exception('Convidado referenciado não encontrado', 404);
+            }
+
             throw new Exception('Erro ao criar checkin', 500);
         }
     }
@@ -123,6 +131,14 @@ class CheckinService
         } catch (PDOException $e) {
             if (str_contains($e->getMessage(), 'convidado_idconvidado')) {
                 throw new Exception('Checkin já existente', 409);
+            }
+
+            if(str_contains($e->getMessage(), 'fk_checkin_usuario')){
+                throw new Exception('Usuário referenciado não encontrado', 404);
+            }
+
+            if(str_contains($e->getMessage(), 'fk_checkin_convidado')){
+                throw new Exception('Convidado referenciado não encontrado', 404);
             }
 
             throw new Exception('Erro ao criar checkin', 500);
