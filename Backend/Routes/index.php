@@ -4,41 +4,38 @@ use Dotenv\Dotenv;
 require_once __DIR__ . "/../vendor/autoload.php";
 require_once __DIR__ . "/../Controllers/Usuario/usuarioController.php";
 require_once __DIR__ . "/../Controllers/Convidado/convidadoController.php";
-require_once __DIR__ . "/../Controllers/Acompanhante/acompanhanteController.php";
-require_once __DIR__ . "/../Controllers/Mesa/mesaController.php";
-require_once __DIR__ . "/../Controllers/Dashboard/dashboardController.php";
 require_once __DIR__ . "/../Controllers/Checkin/checkinController.php";
+require_once __DIR__ . "/../Controllers/Acompanhante/acompanhanteController.php";
+require_once __DIR__ . "/../Controllers/Dashboard/dashboardController.php";
 
 
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Content-Type,  Authorization');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Methods: OPTIONS, GET, POST, PUT, DELETE');
+
+
+$rotaRequisicao = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$metodoRequisicao = $_SERVER['REQUEST_METHOD'];
 
 
 $dotenv = Dotenv::createImmutable(__DIR__ . "/../");
 $dotenv->load();
 
-$caminhoRequisicao = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$metodoRequisicao = $_SERVER['REQUEST_METHOD'];
-
-
-
 
 if($metodoRequisicao === "OPTIONS"){
     http_response_code(200);
-    exit;
 }
 
-// Rotas Usuário:
-if($caminhoRequisicao === "/usuario"){
+if($rotaRequisicao === "/usuario"){
     $usuarioController = new UsuarioController();
-   
 
     if($metodoRequisicao === "GET"){
         $usuarioController->listarUsuarios();
     }
-    
+
     if($metodoRequisicao === "POST"){
         $usuarioController->criarUsuario();
     }
@@ -50,9 +47,10 @@ if($caminhoRequisicao === "/usuario"){
     if($metodoRequisicao === "DELETE"){
         $usuarioController->deletarUsuario();
     }
+
 }
 
-if($caminhoRequisicao === "/usuario/login"){
+if($rotaRequisicao === "/usuario/login"){
     $usuarioController = new UsuarioController();
 
     if($metodoRequisicao === "POST"){
@@ -60,16 +58,13 @@ if($caminhoRequisicao === "/usuario/login"){
     }
 }
 
-
-// Rotas Convidado:
-
-if($caminhoRequisicao === "/convidado"){
+if($rotaRequisicao === "/convidado"){
     $convidadoController = new ConvidadoController();
 
     if($metodoRequisicao === "GET"){
         $convidadoController->listarConvidados();
     }
-    
+
     if($metodoRequisicao === "POST"){
         $convidadoController->criarConvidado();
     }
@@ -84,15 +79,13 @@ if($caminhoRequisicao === "/convidado"){
 }
 
 
-// Rotas Mesa:
-
-if($caminhoRequisicao === "/mesa"){
+if($rotaRequisicao === "/mesa"){
     $mesaController = new MesaController();
 
     if($metodoRequisicao === "GET"){
         $mesaController->listarMesas();
     }
-    
+
     if($metodoRequisicao === "POST"){
         $mesaController->criarMesa();
     }
@@ -106,15 +99,13 @@ if($caminhoRequisicao === "/mesa"){
     }
 }
 
-// Rotas Checkin: 
-
-if($caminhoRequisicao === "/checkin"){
+if($rotaRequisicao === "/checkin"){
     $checkinController = new CheckinController();
 
     if($metodoRequisicao === "GET"){
         $checkinController->listarCheckins();
     }
-    
+
     if($metodoRequisicao === "POST"){
         $checkinController->criarCheckin();
     }
@@ -128,14 +119,32 @@ if($caminhoRequisicao === "/checkin"){
     }
 }
 
-// Rotas Dashboard:
+if($rotaRequisicao === "/acompanhante"){
+    $acompanhanteController = new AcompanhanteController();
 
-if($caminhoRequisicao === "/dashboard"){
+    if($metodoRequisicao === "GET"){
+        $acompanhanteController->listarAcompanhantes();
+    }
+
+    if($metodoRequisicao === "POST"){
+        $acompanhanteController->criarAcompanhante();
+    }
+
+    if($metodoRequisicao === "PUT"){
+        $acompanhanteController->atualizarAcompanhante();
+    }
+
+    if($metodoRequisicao === "DELETE"){
+        $acompanhanteController->deletarAcompanhante();
+    }
+}
+
+if($rotaRequisicao === "/dashboard"){
     $dashboardController = new DashboardController();
 
     if($metodoRequisicao === "GET"){
         $dashboardController->listarDashboard();
     }
-    
+
     
 }

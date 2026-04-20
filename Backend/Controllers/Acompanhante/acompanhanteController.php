@@ -6,14 +6,13 @@ use Firebase\JWT\Key;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
-
 require_once __DIR__ . "/../../Services/Acompanhante/acompanhanteService.php";
 
 class AcompanhanteController
 {
 
-    protected $acompanhanteService;
-    protected $chaveSecreta;
+    private $acompanhanteService;
+    private $chaveSecreta;
 
     public function __construct()
     {
@@ -21,30 +20,30 @@ class AcompanhanteController
         $this->chaveSecreta = $_ENV['JWT_SECRET_KEY'];
     }
 
-
     public function validarToken()
     {
-        $tokenJWT = null;
-
-        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $tokenJWT = $_SERVER['HTTP_AUTHORIZATION'];
-        }
-        if (isset($_SERVER['AUTHORIZATION'])) {
-            $tokenJWT = $_SERVER['AUTHORIZATION'];
-        }
-
-        if (empty($tokenJWT)) {
-            http_response_code(401);
-            echo json_encode([
-                'sucesso' => false,
-                'mensagem' => 'Usuário não autenticado'
-            ]);
-            exit;
-        }
-
         try {
 
-            $partesToken = explode(' ', $tokenJWT);
+            $token = null;
+
+            if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+                $token = $_SERVER['HTTP_AUTHORIZATION'];
+            }
+
+            if (isset($_SERVER['AUTHORIZATION'])) {
+                $token = $_SERVER['AUTHORIZATION'];
+            }
+
+            if (empty($token)) {
+                http_response_code(401);
+                echo json_encode([
+                    'sucesso' => false,
+                    'mensagem' => 'Usuário não autenticado'
+                ]);
+                exit;
+            }
+
+            $partesToken = explode(' ', $token);
 
             if (count($partesToken) !== 2) {
                 http_response_code(401);
@@ -66,65 +65,68 @@ class AcompanhanteController
         }
     }
 
-
-
     public function validarDados($acompanhanteDados)
     {
+       
 
         $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
             ->key('sobrenome', v::stringVal()->notEmpty()->length(1, 45))
             ->key('cpf', v::cpf())
-            ->key('idade', v::intVal());
+            ->key('idade', v::intVal()->notEmpty())
+            ->key('convidado_id_convidado', v::intVal()->notEmpty());
+           
 
         try {
             $esquema->assert($acompanhanteDados);
         } catch (NestedValidationException $e) {
             $mensagemPersonalizada = [
-                'nome' => 'Nome inválido, min 1, max 50',
-                'sobrenome' => 'sobrenome inválido, min 1, max 50',
+                'nome' => 'Nome inválido, min 4, max 45',
+                'sobrenome' => 'Nome inválido, min 4, max 45',
                 'cpf' => 'Cpf inválido',
-                'idade' => 'Idade inválida'
-                
+                'idade' => 'Idade inválida',
+                'convidado_id_convidado' => 'Referência do convidado inválido'
             ];
 
             $mensagemOriginal = $e->getMessages();
-            $mensagemFormatada = [];
+            $mensagemTraduzida = [];
 
             foreach ($mensagemOriginal as $campo => $mensagem) {
-                $mensagemFormatada[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
+                $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
             }
 
-            http_response_code(400);
-            echo json_encode([
+            return [
                 'sucesso' => false,
                 'mensagem' => 'Erro de validação',
-                'erros' => $mensagemFormatada
-            ]);
-            exit;
+                'erros' => $mensagemTraduzida
+            ];
         }
     }
-    // Formatar cpf só quando for enviar para o banco, ou seja, no service em criar e atualizar.
+
+
+
+
     public function listarAcompanhantes()
     {
         $this->validarToken();
-        // Aqui só valida token para ver se está autenticado.
+
         http_response_code(200);
-        echo json_encode($this->acompanhanteService->listarAcompanhantes());
+        echo json_encode($this->acompanhanteService->listarAcompanhante());
         exit;
     }
 
     public function criarAcompanhante()
     {
         try {
-
-            $acompanhanteDados = json_decode(file_get_contents("php://input"), true) ?? null;
             $this->validarToken();
+
+
+            $acompanhanteDados = json_decode(file_get_contents('php://input'), true) ?? null;
             $this->validarDados($acompanhanteDados);
             http_response_code(201);
             echo json_encode($this->acompanhanteService->criarAcompanhante($acompanhanteDados));
             exit;
         } catch (Exception $e) {
-            http_response_code($e->getCode() ?: 500);
+            http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => $e->getMessage()
@@ -139,16 +141,16 @@ class AcompanhanteController
     {
         try {
 
-            $acompanhanteDados = json_decode(file_get_contents("php://input"), true) ?? null;
-            $idAcompanhante = $_GET['id_acompanhante'] ?? null;
             $this->validarToken();
 
+            $acompanhanteDados = json_decode(file_get_contents('php://input'), true) ?? null;
             $this->validarDados($acompanhanteDados);
+            $idAcompanhante = $_GET['id_acompanhante'];
+
             http_response_code(200);
             echo json_encode($this->acompanhanteService->atualizarAcompanhante($acompanhanteDados, $idAcompanhante));
-            exit;
         } catch (Exception $e) {
-            http_response_code($e->getCode() ?: 500);
+            http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => $e->getMessage()
@@ -161,15 +163,13 @@ class AcompanhanteController
     {
         try {
 
-            $idAcompanhante = $_GET['id_acompanhante'] ?? null;
             $this->validarToken();
-
+            $idAcompanhante = $_GET['id_acompanhante'];
 
             http_response_code(200);
             echo json_encode($this->acompanhanteService->deletarAcompanhante($idAcompanhante));
-            exit;
         } catch (Exception $e) {
-            http_response_code($e->getCode() ?: 500);
+            http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => $e->getMessage()

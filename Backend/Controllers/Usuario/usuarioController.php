@@ -6,14 +6,13 @@ use Firebase\JWT\Key;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
-
 require_once __DIR__ . "/../../Services/Usuario/usuarioService.php";
 
 class UsuarioController
 {
 
-    protected $usuarioService;
-    protected $chaveSecreta;
+    private $usuarioService;
+    private $chaveSecreta;
 
     public function __construct()
     {
@@ -21,30 +20,30 @@ class UsuarioController
         $this->chaveSecreta = $_ENV['JWT_SECRET_KEY'];
     }
 
-
     public function validarToken()
     {
-        $tokenJWT = null;
-
-        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $tokenJWT = $_SERVER['HTTP_AUTHORIZATION'];
-        }
-        if (isset($_SERVER['AUTHORIZATION'])) {
-            $tokenJWT = $_SERVER['AUTHORIZATION'];
-        }
-
-        if (empty($tokenJWT)) {
-            http_response_code(401);
-            echo json_encode([
-                'sucesso' => false,
-                'mensagem' => 'Usuário não autenticado'
-            ]);
-            exit;
-        }
-
         try {
 
-            $partesToken = explode(' ', $tokenJWT);
+            $token = null;
+
+            if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+                $token = $_SERVER['HTTP_AUTHORIZATION'];
+            }
+
+            if (isset($_SERVER['AUTHORIZATION'])) {
+                $token = $_SERVER['AUTHORIZATION'];
+            }
+
+            if (empty($token)) {
+                http_response_code(401);
+                echo json_encode([
+                    'sucesso' => false,
+                    'mensagem' => 'Usuário não autenticado'
+                ]);
+                exit;
+            }
+
+            $partesToken = explode(' ', $token);
 
             if (count($partesToken) !== 2) {
                 http_response_code(401);
@@ -66,26 +65,13 @@ class UsuarioController
         }
     }
 
-    public function apenasAdmin()
-    {
-        $jwt = $this->validarToken();
-        if ($jwt->dados->cargo_usuario !== "admin") {
-            http_response_code(403);
-            echo json_encode([
-                'sucesso' => false,
-                'mensagem' => 'Usuário sem permissão'
-            ]);
-            exit;
-        }
-    }
-
     public function validarDados($usuarioDados)
     {
         $cargosPermitidos = ['admin', 'ceremonialista'];
 
         $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
             ->key('email', v::email())
-            ->key('senha', v::stringVal()->length(8, 50))
+            ->key('senha', v::stringVal()->notEmpty()->length(8, 255))
             ->key('cpf', v::cpf())
             ->key('cargo', v::in($cargosPermitidos));
 
@@ -93,30 +79,43 @@ class UsuarioController
             $esquema->assert($usuarioDados);
         } catch (NestedValidationException $e) {
             $mensagemPersonalizada = [
-                'nome' => 'Nome inválido, min 1, max 45',
+                'nome' => 'Nome inválido, min 4, max 45',
                 'email' => 'Email inválido',
-                'senha' => 'Senha inválida, min 8, max 50',
+                'senha' => 'Senha inválida, min 8, max 255',
                 'cpf' => 'Cpf inválido',
-                'cargo' => 'Cargo inválido, é aceito apenas admin ou ceremonialista'
+                'cargo' => 'Cargo fora dos padrões, permitido apenas admin ou ceremonialista'
             ];
 
             $mensagemOriginal = $e->getMessages();
-            $mensagemFormatada = [];
+            $mensagemTraduzida = [];
 
             foreach ($mensagemOriginal as $campo => $mensagem) {
-                $mensagemFormatada[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
+                $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
             }
 
-            http_response_code(400);
-            echo json_encode([
+            return [
                 'sucesso' => false,
                 'mensagem' => 'Erro de validação',
-                'erros' => $mensagemFormatada
+                'erros' => $mensagemTraduzida
+            ];
+        }
+    }
+
+    public function apenasAdmin()
+    {
+        $tokenJWT = $this->validarToken();
+
+        if ($tokenJWT->dados->cargo_usuario !== 'admin') {
+            http_response_code(403);
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => 'Sem permissão'
             ]);
             exit;
         }
     }
-    // Formatar cpf só quando for enviar para o banco, ou seja, no service em criar e atualizar.
+
+
     public function listarUsuarios()
     {
         $this->apenasAdmin();
@@ -129,14 +128,14 @@ class UsuarioController
     {
         try {
             $this->apenasAdmin();
-            $usuarioDados = json_decode(file_get_contents("php://input"), true) ?? null;
 
+            $usuarioDados = json_decode(file_get_contents('php://input'), true) ?? null;
             $this->validarDados($usuarioDados);
             http_response_code(201);
             echo json_encode($this->usuarioService->criarUsuario($usuarioDados));
             exit;
         } catch (Exception $e) {
-            http_response_code($e->getCode() ?: 500);
+            http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => $e->getMessage()
@@ -149,12 +148,12 @@ class UsuarioController
     {
         try {
 
-            $usuarioDados = json_decode(file_get_contents("php://input"), true) ?? null;
+            $usuarioDados = json_decode(file_get_contents('php://input'), true) ?? null;
             http_response_code(200);
             echo json_encode($this->usuarioService->fazerLogin($usuarioDados, $this->chaveSecreta));
             exit;
         } catch (Exception $e) {
-            http_response_code($e->getCode() ?: 500);
+            http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => $e->getMessage()
@@ -166,17 +165,16 @@ class UsuarioController
     public function atualizarUsuario()
     {
         try {
-            $this->apenasAdmin();
-            $usuarioDados = json_decode(file_get_contents("php://input"), true) ?? null;
-            $emailUsuario = $_GET['email_usuario'] ?? null;
-            $this->validarToken();
 
+            $this->apenasAdmin();
+            $usuarioDados = json_decode(file_get_contents('php://input'), true) ?? null;
             $this->validarDados($usuarioDados);
+            $emailUsuario = $_GET['email_usuario'];
+
             http_response_code(200);
             echo json_encode($this->usuarioService->atualizarUsuario($usuarioDados, $emailUsuario));
-            exit;
         } catch (Exception $e) {
-            http_response_code($e->getCode() ?: 500);
+            http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => $e->getMessage()
@@ -188,16 +186,14 @@ class UsuarioController
     public function deletarUsuario()
     {
         try {
-            $this->apenasAdmin();
-            $emailUsuario = $_GET['email_usuario'] ?? null;
-            $this->validarToken();
 
+            $this->apenasAdmin();
+            $emailUsuario = $_GET['email_usuario'];
 
             http_response_code(200);
             echo json_encode($this->usuarioService->deletarUsuario($emailUsuario));
-            exit;
         } catch (Exception $e) {
-            http_response_code($e->getCode() ?: 500);
+            http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => $e->getMessage()
