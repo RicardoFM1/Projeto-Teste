@@ -41,6 +41,33 @@ class ConvidadoService
         ];
     }
 
+    public function buscarConvidadosPorMesaId($mesaId)
+    {
+        if (empty($mesaId)) {
+            throw new Exception('Id da mesa do convidado não fornecido', 400);
+        }
+
+        $buscarConvidado = $this->Db->prepare("SELECT id_convidado FROM convidado WHERE mesa_id_mesa = :mesa_id_mesa");
+        $buscarConvidado->execute([
+            ':mesa_id_mesa' => $mesaId
+        ]);
+
+        $convidado = $buscarConvidado->fetchAll();
+
+        if (empty($convidado)) {
+            return [
+                'sucesso' => false,
+                'mensagem' => 'Convidado não encontrado pelo id da mesa',
+                'codigo' => 404
+            ];
+        }
+
+        return [
+            'sucesso' => true,
+            'dados' => $convidado
+        ];
+    }
+
 
     public function listarConvidados()
     {
@@ -62,8 +89,17 @@ class ConvidadoService
             $convidadoDados['telefone'] = preg_replace('/\D/', '', $convidadoDados['telefone']);
             $convidadoDados['telefone'] = substr($convidadoDados['telefone'], 0, 45);
 
-            if(empty($convidadoDados['mesa_id_mesa'])){
+            if (empty($convidadoDados['mesa_id_mesa'])) {
                 $convidadoDados['mesa_id_mesa'] = null;
+            }
+
+            $convidadosComReferenciasDeMesaId = $this->buscarConvidadosPorMesaId($convidadoDados['mesa_id_mesa']);
+            $mesas = new MesaService();
+            $mesaComEssaReferencia = $mesas->buscarMesaPorId($convidadoDados['mesa_id_mesa']);
+
+
+            if (count($convidadosComReferenciasDeMesaId['dados']) >= $mesaComEssaReferencia['dados']['capacidade']) {
+                throw new Exception('Mesa cheia', 409);
             }
 
             $criarConvidado = $this->Db->prepare("INSERT INTO convidado (nome, sobrenome, email, cpf, telefone, categoria, confirmacao, mesa_id_mesa)
@@ -127,8 +163,12 @@ class ConvidadoService
                 throw new Exception($convidado['mensagem'], $convidado['codigo']);
             }
 
-            if(empty($convidadoDados['mesa_id_mesa']) ){
-                echo json_encode("teste");
+            $convidadosComReferenciasDeMesaId = $this->buscarConvidadosPorMesaId($convidadoDados['mesa_id_mesa']);
+            $mesas = new MesaService();
+            $mesaComEssaReferencia = $mesas->buscarMesaPorId($convidadoDados['mesa_id_mesa']);
+
+            if (count($convidadosComReferenciasDeMesaId['dados']) >= $mesaComEssaReferencia['dados']['capacidade']) {
+                throw new Exception('Mesa cheia', 409);
             }
 
 
@@ -159,7 +199,7 @@ class ConvidadoService
                 throw new Exception('Cpf já em uso', 409);
             }
 
-            if(str_contains($e->getMessage(), 'fk_convidado_mesa')){
+            if (str_contains($e->getMessage(), 'fk_convidado_mesa')) {
                 throw new Exception('Mesa referenciada não encontrada', 404);
             }
 
@@ -169,7 +209,7 @@ class ConvidadoService
 
     public function deletarConvidado($emailConvidado)
     {
-        
+
         if (empty($emailConvidado)) {
             throw new Exception('Email do convidado não fornecido', 400);
         }

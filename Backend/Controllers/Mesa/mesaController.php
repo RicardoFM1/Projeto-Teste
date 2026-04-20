@@ -72,8 +72,8 @@ class MesaController
     {
        
 
-        $esquema = v::key('capacidade', v::intVal()->notEmpty())
-            ->key('restricao', v::intVal()->notEmpty());
+        $esquema = v::key('capacidade', v::intVal()->notEmpty());
+    
            
 
         try {

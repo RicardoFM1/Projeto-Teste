@@ -59,7 +59,9 @@ class MesaService
         try {
 
            
-
+            if(empty($mesaDados['restricao'])){
+                $mesaDados['restricao'] = '';
+            }
 
             $criarMesa = $this->Db->prepare("INSERT INTO mesa (capacidade, restricao)
             VALUES (:capacidade, :restricao)");
@@ -117,7 +119,7 @@ class MesaService
             ];
         } catch (PDOException $e) {
         
-            throw new Exception('Erro ao criar mesa', 500);
+            throw new Exception('Erro ao criar mesa ' . $e->getMessage(), 500);
         }
     }
 
