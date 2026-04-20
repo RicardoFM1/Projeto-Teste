@@ -60,6 +60,11 @@ class ConvidadoService
 
             $convidadoDados['cpf'] = preg_replace('/\D/', '', $convidadoDados['cpf']);
             $convidadoDados['telefone'] = preg_replace('/\D/', '', $convidadoDados['telefone']);
+            $convidadoDados['telefone'] = substr($convidadoDados['telefone'], 0, 45);
+
+            if(empty($convidadoDados['mesa_id_mesa'])){
+                $convidadoDados['mesa_id_mesa'] = null;
+            }
 
             $criarConvidado = $this->Db->prepare("INSERT INTO convidado (nome, sobrenome, email, cpf, telefone, categoria, confirmacao, mesa_id_mesa)
             VALUES (:nome, :sobrenome, :email, :cpf, :telefone, :categoria, :confirmacao, :mesa_id_mesa)");
@@ -114,12 +119,16 @@ class ConvidadoService
 
             $convidadoDados['cpf'] = preg_replace('/\D/', '', $convidadoDados['cpf']);
             $convidadoDados['telefone'] = preg_replace('/\D/', '', $convidadoDados['telefone']);
-
+            $convidadoDados['telefone'] = substr($convidadoDados['telefone'], 0, 45);
 
             $convidado = $this->buscarConvidadoPorEmail($emailConvidado);
 
             if ($convidado['sucesso'] === false) {
                 throw new Exception($convidado['mensagem'], $convidado['codigo']);
+            }
+
+            if(empty($convidadoDados['mesa_id_mesa']) ){
+                echo json_encode("teste");
             }
 
 
