@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+.sidebar {
+    margin-top: 56px;
+}
+
+
+.font-casamento {
+    font-size: 14px; 
+    font-family: 'Inter', sans-serif !important;
+    margin-top: 1.2rem !important;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    color: rgb(126, 124, 124) !important;
+}
+
+.botaoAtivo {
+    background-color: rgb(231, 208, 231) !important;
+    border-right: 5px solid rgba(231, 177, 231, 0.788) !important;
+    font-weight: bold !important;
+    transition: all 0.1s !important;
+}
+
+
+
