@@ -5,8 +5,7 @@ import { RiMenuUnfoldFill } from "react-icons/ri";
 import { RiMenuFoldFill } from "react-icons/ri";
 import style from "./header.module.css"
 
-function Header({telaAtiva, setTelaAtiva}) {
-const [show, setShow] = useState(true)
+function Header({telaAtiva, setTelaAtiva, show, setShow}) {
 
   return (
     <>
@@ -21,8 +20,6 @@ const [show, setShow] = useState(true)
         </Navbar.Collapse>
       </Container>
     </Navbar>
-
-    <SideBar telaAtiva={telaAtiva} setTelaAtiva={setTelaAtiva} show={show}/>
     </>
   );
 }
