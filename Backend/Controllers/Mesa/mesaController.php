@@ -10,9 +10,8 @@ require_once __DIR__ . "/../../Services/Mesa/mesaService.php";
 
 class MesaController
 {
-
-    private $mesaService;
-    private $chaveSecreta;
+    protected $mesaService;
+    protected $chaveSecreta;
 
     public function __construct()
     {
@@ -22,38 +21,37 @@ class MesaController
 
     public function validarToken()
     {
+        $tokenJWT = null;
+
+        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+            $tokenJWT = $_SERVER['HTTP_AUTHORIZATION'];
+        }
+        if (isset($_SERVER['AUTHORIZATION'])) {
+            $tokenJWT = $_SERVER['AUTHORIZATION'];
+        }
+
+        if (empty($tokenJWT)) {
+            http_response_code(401);
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => 'Usuário não autenticado'
+            ]);
+            exit;
+        }
+
+        $partesToken = explode(' ', $tokenJWT);
+
+
+        if (count($partesToken) !== 2) {
+            http_response_code(401);
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => 'Token inválido'
+            ]);
+            exit;
+        }
+
         try {
-
-            $token = null;
-
-            if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-                $token = $_SERVER['HTTP_AUTHORIZATION'];
-            }
-
-            if (isset($_SERVER['AUTHORIZATION'])) {
-                $token = $_SERVER['AUTHORIZATION'];
-            }
-
-            if (empty($token)) {
-                http_response_code(401);
-                echo json_encode([
-                    'sucesso' => false,
-                    'mensagem' => 'Usuário não autenticado'
-                ]);
-                exit;
-            }
-
-            $partesToken = explode(' ', $token);
-
-            if (count($partesToken) !== 2) {
-                http_response_code(401);
-                echo json_encode([
-                    'sucesso' => false,
-                    'mensagem' => 'Token inválido'
-                ]);
-                exit;
-            }
-
             return JWT::decode($partesToken[1], new Key($this->chaveSecreta, 'HS256'));
         } catch (ExpiredException $e) {
             http_response_code(401);
@@ -65,44 +63,11 @@ class MesaController
         }
     }
 
-    public function validarDados($mesaDados)
-    {
-       
 
-        $esquema = v::key('capacidade', v::intVal()->notEmpty());
-            
-
-        try {
-            $esquema->assert($mesaDados);
-        } catch (NestedValidationException $e) {
-            $mensagemPersonalizada = [
-                'capacidade' => 'Capacidade inválida'
-                
-            ];
-
-            $mensagemOriginal = $e->getMessages();
-            $mensagemTraduzida = [];
-
-            foreach ($mensagemOriginal as $campo => $mensagem) {
-                $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
-            }
-
-            return [
-                'sucesso' => false,
-                'mensagem' => 'Erro de validação',
-                'erros' => $mensagemTraduzida
-            ];
-        }
-    }
-
-
-
-
+    
     public function listarMesas()
     {
         $this->validarToken();
-
-        http_response_code(200);
         echo json_encode($this->mesaService->listarMesas());
         exit;
     }
@@ -110,12 +75,10 @@ class MesaController
     public function criarMesa()
     {
         try {
+
             $this->validarToken();
+            $mesaDados = json_decode(file_get_contents("php://input"), true);
 
-
-            $mesaDados = json_decode(file_get_contents('php://input'), true) ?? null;
-            $this->validarDados($mesaDados);
-            http_response_code(201);
             echo json_encode($this->mesaService->criarMesa($mesaDados));
             exit;
         } catch (Exception $e) {
@@ -128,20 +91,18 @@ class MesaController
         }
     }
 
-
+   
 
     public function atualizarMesa()
     {
         try {
-
             $this->validarToken();
-
-            $mesaDados = json_decode(file_get_contents('php://input'), true) ?? null;
-            $this->validarDados($mesaDados);
+            $mesaDados = json_decode(file_get_contents("php://input"), true);
+           
             $idMesa = $_GET['id_mesa'];
 
-            http_response_code(200);
             echo json_encode($this->mesaService->atualizarMesa($mesaDados, $idMesa));
+            exit;
         } catch (Exception $e) {
             http_response_code($e->getCode());
             echo json_encode([
@@ -152,17 +113,15 @@ class MesaController
         }
     }
 
-    public function deletarMesa()
-    {
-        try {
+    public function deletarMesa () {
+        try{
+        $this->validarToken();
+        $idMesa = $_GET['id_mesa'];
 
-            $this->validarToken();
-            $idMesa = $_GET['id_Mesa'];
-
-            http_response_code(200);
-            echo json_encode($this->mesaService->deletarMesa($idMesa));
-        } catch (Exception $e) {
-            http_response_code($e->getCode());
+        echo json_encode($this->mesaService->deletarMesa($idMesa));
+        exit;
+        }catch(Exception $e){
+             http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => $e->getMessage()

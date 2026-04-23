@@ -10,9 +10,8 @@ require_once __DIR__ . "/../../Services/Usuario/usuarioService.php";
 
 class UsuarioController
 {
-
-    private $usuarioService;
-    private $chaveSecreta;
+    protected $usuarioService;
+    protected $chaveSecreta;
 
     public function __construct()
     {
@@ -22,38 +21,37 @@ class UsuarioController
 
     public function validarToken()
     {
+        $tokenJWT = null;
+
+        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+            $tokenJWT = $_SERVER['HTTP_AUTHORIZATION'];
+        }
+        if (isset($_SERVER['AUTHORIZATION'])) {
+            $tokenJWT = $_SERVER['AUTHORIZATION'];
+        }
+
+        if (empty($tokenJWT)) {
+            http_response_code(401);
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => 'Usuário não autenticado'
+            ]);
+            exit;
+        }
+
+        $partesToken = explode(' ', $tokenJWT);
+
+
+        if (count($partesToken) !== 2) {
+            http_response_code(401);
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => 'Token inválido'
+            ]);
+            exit;
+        }
+
         try {
-
-            $token = null;
-
-            if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-                $token = $_SERVER['HTTP_AUTHORIZATION'];
-            }
-
-            if (isset($_SERVER['AUTHORIZATION'])) {
-                $token = $_SERVER['AUTHORIZATION'];
-            }
-
-            if (empty($token)) {
-                http_response_code(401);
-                echo json_encode([
-                    'sucesso' => false,
-                    'mensagem' => 'Usuário não autenticado'
-                ]);
-                exit;
-            }
-
-            $partesToken = explode(' ', $token);
-
-            if (count($partesToken) !== 2) {
-                http_response_code(401);
-                echo json_encode([
-                    'sucesso' => false,
-                    'mensagem' => 'Token inválido'
-                ]);
-                exit;
-            }
-
             return JWT::decode($partesToken[1], new Key($this->chaveSecreta, 'HS256'));
         } catch (ExpiredException $e) {
             http_response_code(401);
@@ -67,6 +65,7 @@ class UsuarioController
 
     public function validarDados($usuarioDados)
     {
+        try {
         $cargosPermitidos = ['admin', 'ceremonialista'];
 
         $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
@@ -75,17 +74,16 @@ class UsuarioController
             ->key('cpf', v::cpf())
             ->key('cargo', v::in($cargosPermitidos));
 
-        try {
             $esquema->assert($usuarioDados);
         } catch (NestedValidationException $e) {
+
             $mensagemPersonalizada = [
-                'nome' => 'Nome inválido, min 4, max 45',
+                'nome' => 'Nome inválido, min 1, max 45',
                 'email' => 'Email inválido',
                 'senha' => 'Senha inválida, min 8, max 255',
                 'cpf' => 'Cpf inválido',
-                'cargo' => 'Cargo fora dos padrões, permitido apenas admin ou ceremonialista'
+                'cargo' => 'Cargo fora do escopo: admin ou ceremonialista'
             ];
-
             $mensagemOriginal = $e->getMessages();
             $mensagemTraduzida = [];
 
@@ -93,33 +91,33 @@ class UsuarioController
                 $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
             }
 
-            return [
-                'sucesso' => false,
-                'mensagem' => 'Erro de validação',
-                'erros' => $mensagemTraduzida
-            ];
-        }
-    }
-
-    public function apenasAdmin()
-    {
-        $tokenJWT = $this->validarToken();
-
-        if ($tokenJWT->dados->cargo_usuario !== 'admin') {
-            http_response_code(403);
             echo json_encode([
                 'sucesso' => false,
-                'mensagem' => 'Sem permissão'
+                'mensagem' => 'Erros de validação',
+                'erros' => $mensagemTraduzida
             ]);
             exit;
         }
     }
 
 
+    public function apenasAdmin()
+    {
+        $jwt = $this->validarToken();
+
+        if ($jwt->dados->cargo_usuario !== 'admin') {
+            http_response_code(403);
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => 'Usuário sem permissão'
+            ]);
+            exit;
+        }
+    }
+
     public function listarUsuarios()
     {
         $this->apenasAdmin();
-        http_response_code(200);
         echo json_encode($this->usuarioService->listarUsuarios());
         exit;
     }
@@ -127,11 +125,12 @@ class UsuarioController
     public function criarUsuario()
     {
         try {
-            $this->apenasAdmin();
 
-            $usuarioDados = json_decode(file_get_contents('php://input'), true) ?? null;
+            $this->apenasAdmin();
+            $usuarioDados = json_decode(file_get_contents("php://input"), true);
+
             $this->validarDados($usuarioDados);
-            http_response_code(201);
+
             echo json_encode($this->usuarioService->criarUsuario($usuarioDados));
             exit;
         } catch (Exception $e) {
@@ -147,9 +146,8 @@ class UsuarioController
     public function fazerLogin()
     {
         try {
+            $usuarioDados = json_decode(file_get_contents("php://input"), true);
 
-            $usuarioDados = json_decode(file_get_contents('php://input'), true) ?? null;
-            http_response_code(200);
             echo json_encode($this->usuarioService->fazerLogin($usuarioDados, $this->chaveSecreta));
             exit;
         } catch (Exception $e) {
@@ -165,14 +163,13 @@ class UsuarioController
     public function atualizarUsuario()
     {
         try {
-
             $this->apenasAdmin();
-            $usuarioDados = json_decode(file_get_contents('php://input'), true) ?? null;
+            $usuarioDados = json_decode(file_get_contents("php://input"), true);
             $this->validarDados($usuarioDados);
             $emailUsuario = $_GET['email_usuario'];
 
-            http_response_code(200);
             echo json_encode($this->usuarioService->atualizarUsuario($usuarioDados, $emailUsuario));
+            exit;
         } catch (Exception $e) {
             http_response_code($e->getCode());
             echo json_encode([
@@ -183,17 +180,15 @@ class UsuarioController
         }
     }
 
-    public function deletarUsuario()
-    {
-        try {
+    public function deletarUsuario () {
+        try{
+        $this->apenasAdmin();
+        $emailUsuario = $_GET['email_usuario'];
 
-            $this->apenasAdmin();
-            $emailUsuario = $_GET['email_usuario'];
-
-            http_response_code(200);
-            echo json_encode($this->usuarioService->deletarUsuario($emailUsuario));
-        } catch (Exception $e) {
-            http_response_code($e->getCode());
+        echo json_encode($this->usuarioService->deletarUsuario($emailUsuario));
+        exit;
+        }catch(Exception $e){
+             http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => $e->getMessage()

@@ -1,17 +1,17 @@
 <?php
 
 use Firebase\JWT\JWT;
+
 require_once __DIR__ . "/../../Connection/connection.php";
 
 class UsuarioService
 {
-    private $usuarioDb;
+    protected $db;
 
     public function __construct()
     {
-        $this->usuarioDb = dbConnection();
+        $this->db = dbConnection();
     }
-
 
     public function buscarUsuarioPorEmail($emailUsuario)
     {
@@ -19,10 +19,9 @@ class UsuarioService
             throw new Exception('Dados inválidos', 400);
         }
 
-        $buscarUsuario = $this->usuarioDb->prepare("SELECT * FROM usuario WHERE email = :email");
-
+        $buscarUsuario = $this->db->prepare('SELECT * FROM usuario WHERE email = :email_usuario');
         $buscarUsuario->execute([
-            ':email' => $emailUsuario
+            ':email_usuario' => $emailUsuario
         ]);
 
         $usuario = $buscarUsuario->fetch();
@@ -30,7 +29,7 @@ class UsuarioService
         if (empty($usuario)) {
             return [
                 'sucesso' => false,
-                'mensagem' => 'Usuário não encontrado pelo id',
+                'mensagem' => 'Usuário não encontrado',
                 'codigo' => 404
             ];
         }
@@ -43,7 +42,8 @@ class UsuarioService
 
     public function listarUsuarios()
     {
-        $query = $this->usuarioDb->query("SELECT nome, email, cpf, cargo FROM usuario");
+        $query = $this->db->query('SELECT nome, email, cpf, cargo FROM usuario');
+
         $usuarios = $query->fetchAll();
 
         return [
@@ -57,14 +57,14 @@ class UsuarioService
         try {
             $usuarioDados['cpf'] = preg_replace('/\D/', '', $usuarioDados['cpf']);
 
-            $criarUsuario = $this->usuarioDb->prepare('INSERT INTO usuario (nome, email, senha, cpf, cargo)
-        VALUES (:nome, :email, :senha, :cpf, :cargo)');
+            $criarUsuario = $this->db->prepare('INSERT INTO usuario (nome, email, cpf, senha, cargo)
+        VALUES (:nome, :email, :cpf, :senha, :cargo)');
 
             $criarUsuario->execute([
                 ':nome' => $usuarioDados['nome'],
                 ':email' => $usuarioDados['email'],
-                ':senha' => password_hash($usuarioDados['senha'], PASSWORD_DEFAULT),
                 ':cpf' => $usuarioDados['cpf'],
+                ':senha' => password_hash($usuarioDados['senha'], PASSWORD_DEFAULT),
                 ':cargo' => $usuarioDados['cargo']
             ]);
 
@@ -76,48 +76,50 @@ class UsuarioService
             if (str_contains($e->getMessage(), 'email')) {
                 throw new Exception('Email já em uso', 409);
             }
-
             if (str_contains($e->getMessage(), 'cpf')) {
-                throw new Exception('Cpf já em uso', 409);
+                throw new Exception('CPF já em uso', 409);
             }
 
-            throw new Exception('Erro ao criar usuário' . $e->getMessage(), 500);
+            throw new Exception('Erro ao criar usuário', 500);
         }
     }
 
 
     public function fazerLogin($usuarioDados, $chaveSecreta)
     {
+        try {
 
-        $usuario = $this->buscarUsuarioPorEmail($usuarioDados['email']);
+            $usuario = $this->buscarUsuarioPorEmail($usuarioDados['email']);
 
-        if ($usuario['sucesso'] === false) {
-            throw new Exception('Credenciais inválidas', 401);
+            if ($usuario['sucesso'] === false) {
+                throw new Exception('Credenciais inválidas', 401);
+            }
+
+            $senhaCorreta = password_verify($usuarioDados['senha'], $usuario['dados']['senha']);
+
+            if (!$senhaCorreta) {
+                throw new Exception('Credenciais inválidas', 401);
+            }
+
+            $payload = [
+                'exp' => time() + 3600,
+                'dados' => [
+                    'id_usuario' => $usuario['dados']['id_usuario'],
+                    'cargo_usuario' => $usuario['dados']['cargo']
+                ]
+            ];
+
+            $jwt = JWT::encode($payload, $chaveSecreta, 'HS256');
+
+            return [
+                'sucesso' => true,
+                'mensagem' => 'Usuário logado com sucesso',
+                'token' => $jwt
+            ];
+        } catch (PDOException $e) {
+            throw new Exception('Erro ao tentar fazer login', 500);
         }
-
-        $senhaValida = password_verify($usuarioDados['senha'], $usuario['dados']['senha']);
-
-        if (!$senhaValida) {
-            throw new Exception('Credenciais inválidas', 401);
-        }
-
-        $payload = [
-            'exp' => time() + 3600,
-            'dados' => [
-                'id_usuario' => $usuario['dados']['id_usuario'],
-                'cargo_usuario' => $usuario['dados']['cargo']
-            ]
-        ];
-
-        $jwt = JWT::encode($payload, $chaveSecreta, 'HS256');
-
-        return [
-            'sucesso' => true,
-            'mensagem' => 'Login realizado com sucesso',
-            'token' => $jwt
-        ];
     }
-
 
     public function atualizarUsuario($usuarioDados, $emailUsuario)
     {
@@ -127,24 +129,24 @@ class UsuarioService
                 throw new Exception('Dados inválidos', 400);
             }
 
-            $usuarioDados['cpf'] = preg_replace('/\D/', '', $usuarioDados['cpf']);
-
             $usuario = $this->buscarUsuarioPorEmail($emailUsuario);
 
             if ($usuario['sucesso'] === false) {
                 throw new Exception($usuario['mensagem'], $usuario['codigo']);
             }
 
-            $atualizarUsuario = $this->usuarioDb->prepare("UPDATE usuario SET nome = :nome, email = :email,
-            senha = :senha, cpf = :cpf, cargo = :cargo WHERE email = :email_usuario");
+            $usuarioDados['cpf'] = preg_replace('/\D/', '', $usuarioDados['cpf']);
+
+            $atualizarUsuario = $this->db->prepare('UPDATE usuario SET nome = :nome, email = :email, senha = :senha,
+         cpf = :cpf, cargo = :cargo WHERE email = :email_antigo');
 
             $atualizarUsuario->execute([
                 ':nome' => $usuarioDados['nome'],
                 ':email' => $usuarioDados['email'],
-                ':senha' => password_hash($usuarioDados['senha'], PASSWORD_DEFAULT),
                 ':cpf' => $usuarioDados['cpf'],
+                ':senha' => password_hash($usuarioDados['senha'], PASSWORD_DEFAULT),
                 ':cargo' => $usuarioDados['cargo'],
-                ':email_usuario' => $emailUsuario
+                ':email_antigo' => $emailUsuario
             ]);
 
             return [
@@ -155,42 +157,35 @@ class UsuarioService
             if (str_contains($e->getMessage(), 'email')) {
                 throw new Exception('Email já em uso', 409);
             }
-
             if (str_contains($e->getMessage(), 'cpf')) {
-                throw new Exception('Cpf já em uso', 409);
+                throw new Exception('CPF já em uso', 409);
             }
 
-            throw new Exception('Erro ao atualizar usuário' . $e->getMessage(), 500);
+            throw new Exception('Erro ao criar usuário', 500);
         }
     }
 
     public function deletarUsuario($emailUsuario)
     {
-        try {
-
-            if (empty($emailUsuario)) {
-                throw new Exception('Dados inválidos', 400);
-            }
-
-            $usuario = $this->buscarUsuarioPorEmail($emailUsuario);
-
-            if ($usuario['sucesso'] === false) {
-                throw new Exception($usuario['mensagem'], $usuario['codigo']);
-            }
-
-            $deletarUsuario = $this->usuarioDb->prepare("DELETE FROM usuario WHERE email = :email_usuario");
-
-            $deletarUsuario->execute([
-
-                ':email_usuario' => $emailUsuario
-            ]);
-
-            return [
-                'sucesso' => true,
-                'mensagem' => 'Usuário deletado com sucesso'
-            ];
-        } catch (PDOException $e) {
-            throw new Exception('Erro ao deletar usuário' . $e->getMessage(), 500);
+        if (empty($emailUsuario)) {
+            throw new Exception('Dados inválidos', 400);
         }
+
+        $usuario = $this->buscarUsuarioPorEmail($emailUsuario);
+
+        if ($usuario['sucesso'] === false) {
+            throw new Exception($usuario['mensagem'], $usuario['codigo']);
+        }
+
+        $deletarUsuario = $this->db->prepare('DELETE FROM usuario WHERE email = :email');
+
+        $deletarUsuario->execute([
+            ':email' => $emailUsuario
+        ]);
+
+        return [
+            'sucesso' => true,
+            'mensagem' => 'Usuário deletado com sucesso'
+        ];
     }
 }

@@ -10,50 +10,48 @@ require_once __DIR__ . "/../../Services/Convidado/convidadoService.php";
 
 class ConvidadoController
 {
-
-    private $convidadoService;
-    private $chaveSecreta;
+    protected $convidadoService;
+    protected $chaveSecreta;
 
     public function __construct()
     {
-        $this->convidadoService = new UsuarioService();
+        $this->convidadoService = new ConvidadoService();
         $this->chaveSecreta = $_ENV['JWT_SECRET_KEY'];
     }
 
     public function validarToken()
     {
+        $tokenJWT = null;
+
+        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+            $tokenJWT = $_SERVER['HTTP_AUTHORIZATION'];
+        }
+        if (isset($_SERVER['AUTHORIZATION'])) {
+            $tokenJWT = $_SERVER['AUTHORIZATION'];
+        }
+
+        if (empty($tokenJWT)) {
+            http_response_code(401);
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => 'Usuário não autenticado'
+            ]);
+            exit;
+        }
+
+        $partesToken = explode(' ', $tokenJWT);
+
+
+        if (count($partesToken) !== 2) {
+            http_response_code(401);
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => 'Token inválido'
+            ]);
+            exit;
+        }
+
         try {
-
-            $token = null;
-
-            if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-                $token = $_SERVER['HTTP_AUTHORIZATION'];
-            }
-
-            if (isset($_SERVER['AUTHORIZATION'])) {
-                $token = $_SERVER['AUTHORIZATION'];
-            }
-
-            if (empty($token)) {
-                http_response_code(401);
-                echo json_encode([
-                    'sucesso' => false,
-                    'mensagem' => 'Usuário não autenticado'
-                ]);
-                exit;
-            }
-
-            $partesToken = explode(' ', $token);
-
-            if (count($partesToken) !== 2) {
-                http_response_code(401);
-                echo json_encode([
-                    'sucesso' => false,
-                    'mensagem' => 'Token inválido'
-                ]);
-                exit;
-            }
-
             return JWT::decode($partesToken[1], new Key($this->chaveSecreta, 'HS256'));
         } catch (ExpiredException $e) {
             http_response_code(401);
@@ -67,6 +65,7 @@ class ConvidadoController
 
     public function validarDados($convidadoDados)
     {
+        try {
         $confirmacaoPermitida = ['confirmado', 'não confirmado', 'cancelado'];
 
         $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
@@ -77,19 +76,18 @@ class ConvidadoController
             ->key('categoria', v::stringVal()->notEmpty())
             ->key('confirmacao', v::in($confirmacaoPermitida));
 
-        try {
             $esquema->assert($convidadoDados);
         } catch (NestedValidationException $e) {
-            $mensagemPersonalizada = [
-                'nome' => 'Nome inválido, min 4, max 45',
-                'sobrenome' => 'Nome inválido, min 4, max 45',
-                'email' => 'Email inválido',
-                'telefone' => 'Telefone inválido',
-                'cpf' => 'Cpf inválido',
-                'categoria' => 'categoria inválida',
-                'confirmacao' => 'Confirmacao inválida, é permitido apenas confirmado, não confirmado e cancelado'
-            ];
 
+            $mensagemPersonalizada = [
+                'nome' => 'Nome inválido, min 1, max 45',
+                'sobrenome' => 'Sobrenome inválido, min 1, max 45',
+                'email' => 'Email inválido',
+                'cpf' => 'Cpf inválido',
+                'telefone' => 'Telefone inválido',
+                'categoria' => 'Categoria inválida',
+                'confirmacao' => 'Fora do escopo: confirmado, não confirmado e cancelado'
+            ];
             $mensagemOriginal = $e->getMessages();
             $mensagemTraduzida = [];
 
@@ -97,36 +95,34 @@ class ConvidadoController
                 $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
             }
 
-            return [
+            echo json_encode([
                 'sucesso' => false,
-                'mensagem' => 'Erro de validação',
+                'mensagem' => 'Erros de validação',
                 'erros' => $mensagemTraduzida
-            ];
+            ]);
+            exit;
         }
     }
-
 
 
 
     public function listarConvidados()
     {
         $this->validarToken();
-
-        http_response_code(200);
-        echo json_encode($this->convidadoService->listarUsuarios());
+        echo json_encode($this->convidadoService->listarConvidados());
         exit;
     }
 
     public function criarConvidado()
     {
         try {
+
             $this->validarToken();
+            $convidadoDados = json_decode(file_get_contents("php://input"), true);
 
-
-            $convidadoDados = json_decode(file_get_contents('php://input'), true) ?? null;
             $this->validarDados($convidadoDados);
-            http_response_code(201);
-            echo json_encode($this->convidadoService->criarUsuario($convidadoDados));
+
+            echo json_encode($this->convidadoService->criarConvidado($convidadoDados));
             exit;
         } catch (Exception $e) {
             http_response_code($e->getCode());
@@ -138,20 +134,18 @@ class ConvidadoController
         }
     }
 
-
+    
 
     public function atualizarConvidado()
     {
         try {
-
             $this->validarToken();
-
-            $convidadoDados = json_decode(file_get_contents('php://input'), true) ?? null;
+            $convidadoDados = json_decode(file_get_contents("php://input"), true);
             $this->validarDados($convidadoDados);
             $emailConvidado = $_GET['email_convidado'];
 
-            http_response_code(200);
-            echo json_encode($this->convidadoService->atualizarUsuario($convidadoDados, $emailConvidado));
+            echo json_encode($this->convidadoService->atualizarConvidado($convidadoDados, $emailConvidado));
+            exit;
         } catch (Exception $e) {
             http_response_code($e->getCode());
             echo json_encode([
@@ -162,17 +156,15 @@ class ConvidadoController
         }
     }
 
-    public function deletarConvidado()
-    {
-        try {
+    public function deletarConvidado () {
+        try{
+        $this->validarToken();
+        $emailConvidado = $_GET['email_convidado'];
 
-            $this->validarToken();
-            $emailConvidado = $_GET['email_convidado'];
-
-            http_response_code(200);
-            echo json_encode($this->convidadoService->deletarUsuario($emailConvidado));
-        } catch (Exception $e) {
-            http_response_code($e->getCode());
+        echo json_encode($this->convidadoService->deletarConvidado($emailConvidado));
+        exit;
+        }catch(Exception $e){
+             http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => $e->getMessage()
