@@ -1,0 +1,16 @@
+.Card{
+    margin-top: 10px;
+    margin-bottom: 18px;
+    max-width: 200px;
+    height: 150px;
+    border: none;
+    background-color: rgba(236, 199, 236, 0.623);
+   
+   
+}
+
+.CardTitle {
+    display: flex;
+    justify-content: center;
+    padding-top: 20px;
+}
