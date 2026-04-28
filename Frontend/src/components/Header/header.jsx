@@ -15,9 +15,7 @@ function Header({telaAtiva, setTelaAtiva, show, setShow}) {
           {show ? <RiMenuFoldFill size={25}/> : <RiMenuUnfoldFill size={25}/> }
         </Button>
         <Navbar.Brand href="/">Senac Wedding</Navbar.Brand>
-        <Navbar.Collapse id="header">
-         
-        </Navbar.Collapse>
+       
       </Container>
     </Navbar>
     </>
