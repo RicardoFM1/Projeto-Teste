@@ -19,12 +19,13 @@ class CheckinService
             throw new Exception('Dados inválidos', 400);
         }
 
-        $buscarCheckin = $this->db->prepare('SELECT * FROM checkin WHERE id_checkin = :id_checkin');
-        $buscarCheckin->execute([
+        $buscar = $this->db->prepare('SELECT * FROM checkin WHERE id_checkin = :id_checkin');
+
+        $buscar->execute([
             ':id_checkin' => $idCheckin
         ]);
 
-        $checkin = $buscarCheckin->fetch();
+        $checkin = $buscar->fetch();
 
         if (empty($checkin)) {
             return [
@@ -42,7 +43,7 @@ class CheckinService
 
     public function listarCheckins()
     {
-        $query = $this->db->query('SELECT * FROM checkin');
+        $query = $this->db->query("SELECT * FROM checkin");
 
         $checkins = $query->fetchAll();
 
@@ -52,15 +53,17 @@ class CheckinService
         ];
     }
 
+
     public function criarCheckin($checkinDados, $tokenJWT)
     {
         try {
-            $dataehora = new DateTime();
 
-            $criarCheckin = $this->db->prepare('INSERT INTO checkin (usuario_idusuario, convidado_idconvidado, data_e_hora)
-        VALUES (:usuario_idusuario, :convidado_idconvidado, :data_e_hora)');
+            $criar = $this->db->prepare('INSERT INTO checkin (usuario_idusuario, convidado_idconvidado, data_e_hora)
+            VALUES (:usuario_idusuario, :convidado_idconvidado, :data_e_hora)');
 
-            $criarCheckin->execute([
+            $dataehora = new DateTime();            
+
+            $criar->execute([
                 ':usuario_idusuario' => $tokenJWT->dados->id_usuario,
                 ':convidado_idconvidado' => $checkinDados['convidado_idconvidado'],
                 ':data_e_hora' => $dataehora->getTimestamp()
@@ -78,15 +81,17 @@ class CheckinService
                 throw new Exception('Usuário referenciado não encontrado', 409);
             }
 
-            if (str_contains($e->getMessage(), 'fk_checkin_convidado')) {
+             if (str_contains($e->getMessage(), 'fk_checkin_convidado')) {
                 throw new Exception('Convidado referenciado não encontrado', 409);
             }
 
-            throw new Exception('Erro ao criar usuário', 500);
+
+            throw new Exception('Erro ao criar checkin', 500);
         }
     }
 
 
+   
 
     public function atualizarCheckin($checkinDados, $idCheckin, $tokenJWT)
     {
@@ -96,25 +101,24 @@ class CheckinService
                 throw new Exception('Dados inválidos', 400);
             }
 
+             
+
             $checkin = $this->buscarCheckinPorId($idCheckin);
 
             if ($checkin['sucesso'] === false) {
                 throw new Exception($checkin['mensagem'], $checkin['codigo']);
             }
-            
+
             if($tokenJWT->dados->cargo_usuario !== 'admin' && $tokenJWT->dados->id_usuario !== $checkin['dados']['usuario_idusuario']){
-            throw new Exception('Sem permissão para atualizar', 403);
-        }
+                throw new Exception('Sem permissão', 403);
+            }
 
-            $dataehora = new Datetime();
+            $dataehora = new DateTime();            
 
+            $atualizar = $this->db->prepare('UPDATE checkin set convidado_idconvidado = :convidado_idconvidado,  data_e_hora = :data_e_hora
+             WHERE id_checkin = :id_checkin');
 
-            $atualizarCheckin = $this->db->prepare('UPDATE checkin SET usuario_idusuario = :usuario_idusuario,
-             convidado_idconvidado = :convidado_idconvidado, data_e_hora = :data_e_hora
-            WHERE id_checkin = :id_checkin');
-
-            $atualizarCheckin->execute([
-                ':usuario_idusuario' => $tokenJWT->dados->id_usuario,
+            $atualizar->execute([
                 ':convidado_idconvidado' => $checkinDados['convidado_idconvidado'],
                 ':data_e_hora' => $dataehora->getTimestamp(),
                 ':id_checkin' => $idCheckin
@@ -125,46 +129,48 @@ class CheckinService
                 'mensagem' => 'Checkin atualizado com sucesso'
             ];
         } catch (PDOException $e) {
-             if (str_contains($e->getMessage(), 'convidado_idconvidado')) {
+            if (str_contains($e->getMessage(), 'convidado_idconvidado')) {
                 throw new Exception('Checkin já cadastrado', 409);
             }
             if (str_contains($e->getMessage(), 'fk_checkin_usuario')) {
                 throw new Exception('Usuário referenciado não encontrado', 409);
             }
 
-            if (str_contains($e->getMessage(), 'fk_checkin_convidado')) {
+             if (str_contains($e->getMessage(), 'fk_checkin_convidado')) {
                 throw new Exception('Convidado referenciado não encontrado', 409);
             }
 
-            throw new Exception('Erro ao criar usuário', 500);
+
+            throw new Exception('Erro ao atualizar checkin', 500);
         }
     }
 
     public function deletarCheckin($idCheckin, $tokenJWT)
     {
-        if (empty($idCheckin)) {
-            throw new Exception('Dados inválidos', 400);
+        try {
+
+            $checkin = $this->buscarCheckinPorId($idCheckin);
+
+            if ($checkin['sucesso'] === false) {
+                throw new Exception($checkin['mensagem'], $checkin['codigo']);
+            }
+
+             if($tokenJWT->dados->cargo_usuario !== 'admin' && $tokenJWT->dados->id_usuario !== $checkin['dados']['usuario_idusuario']){
+                throw new Exception('Sem permissão', 403);
+            }
+
+            $deletar = $this->db->prepare('DELETE FROM checkin WHERE id_checkin = :id_checkin');
+
+            $deletar->execute([
+                ':id_checkin' => $idCheckin
+            ]);
+
+            return [
+                'sucesso' => true,
+                'mensagem' => 'Checkin deletado com sucesso'
+            ];
+        } catch (PDOException $e) {
+            throw new Exception('Erro ao deletar checkin', 500);
         }
-
-        $checkin = $this->buscarCheckinPorId($idCheckin);
-
-        if ($checkin['sucesso'] === false) {
-            throw new Exception($checkin['mensagem'], $checkin['codigo']);
-        }
-
-        if($tokenJWT->dados->cargo_usuario !== 'admin' && $tokenJWT->dados->id_usuario !== $checkin['dados']['usuario_idusuario']){
-            throw new Exception('Sem permissão para deletar', 403);
-        }
-
-        $deletarCheckin = $this->db->prepare('DELETE FROM checkin WHERE id_checkin = :id_checkin');
-
-        $deletarCheckin->execute([
-            ':id_checkin' => $idCheckin
-        ]);
-
-        return [
-            'sucesso' => true,
-            'mensagem' => 'Checkin deletado com sucesso'
-        ];
     }
 }

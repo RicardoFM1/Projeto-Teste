@@ -7,6 +7,7 @@ use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
 require_once __DIR__ . "/../../Services/Convidado/convidadoService.php";
+require_once __DIR__ . "/../../Middleware/authMiddleware.php";
 
 class ConvidadoController
 {
@@ -19,49 +20,6 @@ class ConvidadoController
         $this->chaveSecreta = $_ENV['JWT_SECRET_KEY'];
     }
 
-    public function validarToken()
-    {
-        $tokenJWT = null;
-
-        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $tokenJWT = $_SERVER['HTTP_AUTHORIZATION'];
-        }
-        if (isset($_SERVER['AUTHORIZATION'])) {
-            $tokenJWT = $_SERVER['AUTHORIZATION'];
-        }
-
-        if (empty($tokenJWT)) {
-            http_response_code(401);
-            echo json_encode([
-                'sucesso' => false,
-                'mensagem' => 'Usuário não autenticado'
-            ]);
-            exit;
-        }
-
-        $partesToken = explode(' ', $tokenJWT);
-
-
-        if (count($partesToken) !== 2) {
-            http_response_code(401);
-            echo json_encode([
-                'sucesso' => false,
-                'mensagem' => 'Token inválido'
-            ]);
-            exit;
-        }
-
-        try {
-            return JWT::decode($partesToken[1], new Key($this->chaveSecreta, 'HS256'));
-        } catch (ExpiredException $e) {
-            http_response_code(401);
-            echo json_encode([
-                'sucesso' => false,
-                'mensagem' => 'Token expirado'
-            ]);
-            exit;
-        }
-    }
 
     public function validarDados($convidadoDados)
     {
@@ -72,9 +30,9 @@ class ConvidadoController
             ->key('sobrenome', v::stringVal()->notEmpty()->length(1, 45))
             ->key('email', v::email())
             ->key('cpf', v::cpf())
-            ->key('telefone', v::phone())
             ->key('categoria', v::stringVal()->notEmpty())
-            ->key('confirmacao', v::in($confirmacaoPermitida));
+            ->key('confirmacao', v::in($confirmacaoPermitida))
+            ->key('telefone', v::phone());
 
             $esquema->assert($convidadoDados);
         } catch (NestedValidationException $e) {
@@ -84,9 +42,9 @@ class ConvidadoController
                 'sobrenome' => 'Sobrenome inválido, min 1, max 45',
                 'email' => 'Email inválido',
                 'cpf' => 'Cpf inválido',
-                'telefone' => 'Telefone inválido',
                 'categoria' => 'Categoria inválida',
-                'confirmacao' => 'Fora do escopo: confirmado, não confirmado e cancelado'
+                'telefone' => 'Telefone inválido',
+                'confirmacao' => 'Confirmacao fora do escopo: confirmado, não confirmado ou cancelado'
             ];
             $mensagemOriginal = $e->getMessages();
             $mensagemTraduzida = [];
@@ -108,7 +66,7 @@ class ConvidadoController
 
     public function listarConvidados()
     {
-        $this->validarToken();
+        Auth::validarMiddleware();
         echo json_encode($this->convidadoService->listarConvidados());
         exit;
     }
@@ -117,7 +75,7 @@ class ConvidadoController
     {
         try {
 
-            $this->validarToken();
+            Auth::validarMiddleware();
             $convidadoDados = json_decode(file_get_contents("php://input"), true);
 
             $this->validarDados($convidadoDados);
@@ -134,12 +92,12 @@ class ConvidadoController
         }
     }
 
-    
+   
 
     public function atualizarConvidado()
     {
         try {
-            $this->validarToken();
+            Auth::validarMiddleware();
             $convidadoDados = json_decode(file_get_contents("php://input"), true);
             $this->validarDados($convidadoDados);
             $emailConvidado = $_GET['email_convidado'];
@@ -158,7 +116,7 @@ class ConvidadoController
 
     public function deletarConvidado () {
         try{
-        $this->validarToken();
+        Auth::validarMiddleware();
         $emailConvidado = $_GET['email_convidado'];
 
         echo json_encode($this->convidadoService->deletarConvidado($emailConvidado));

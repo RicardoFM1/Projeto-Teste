@@ -10,8 +10,6 @@ return array(
     'Symfony\\Polyfill\\Mbstring\\' => array($vendorDir . '/symfony/polyfill-mbstring'),
     'Symfony\\Polyfill\\Ctype\\' => array($vendorDir . '/symfony/polyfill-ctype'),
     'Respect\\Validation\\' => array($vendorDir . '/respect/validation/library'),
-    'Respect\\Stringifier\\Test\\Unit\\' => array($vendorDir . '/respect/stringifier/tests/unit'),
-    'Respect\\Stringifier\\Test\\' => array($vendorDir . '/respect/stringifier/tests/src'),
     'Respect\\Stringifier\\' => array($vendorDir . '/respect/stringifier/src'),
     'PhpOption\\' => array($vendorDir . '/phpoption/phpoption/src/PhpOption'),
     'GrahamCampbell\\ResultType\\' => array($vendorDir . '/graham-campbell/result-type/src'),

@@ -7,6 +7,7 @@ use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
 require_once __DIR__ . "/../../Services/Checkin/checkinService.php";
+require_once __DIR__ . "/../../Middleware/authMiddleware.php";
 
 class CheckinController
 {
@@ -19,55 +20,12 @@ class CheckinController
         $this->chaveSecreta = $_ENV['JWT_SECRET_KEY'];
     }
 
-    public function validarToken()
-    {
-        $tokenJWT = null;
-
-        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
-            $tokenJWT = $_SERVER['HTTP_AUTHORIZATION'];
-        }
-        if (isset($_SERVER['AUTHORIZATION'])) {
-            $tokenJWT = $_SERVER['AUTHORIZATION'];
-        }
-
-        if (empty($tokenJWT)) {
-            http_response_code(401);
-            echo json_encode([
-                'sucesso' => false,
-                'mensagem' => 'Usuário não autenticado'
-            ]);
-            exit;
-        }
-
-        $partesToken = explode(' ', $tokenJWT);
-
-
-        if (count($partesToken) !== 2) {
-            http_response_code(401);
-            echo json_encode([
-                'sucesso' => false,
-                'mensagem' => 'Token inválido'
-            ]);
-            exit;
-        }
-
-        try {
-            return JWT::decode($partesToken[1], new Key($this->chaveSecreta, 'HS256'));
-        } catch (ExpiredException $e) {
-            http_response_code(401);
-            echo json_encode([
-                'sucesso' => false,
-                'mensagem' => 'Token expirado'
-            ]);
-            exit;
-        }
-    }
-
+   
 
 
     public function listarCheckins()
     {
-        $this->validarToken();
+       Auth::validarMiddleware();
         echo json_encode($this->checkinService->listarCheckins());
         exit;
     }
@@ -76,10 +34,10 @@ class CheckinController
     {
         try {
 
-           $tokenJWT = $this->validarToken();
+            $tokenJWT =Auth::validarMiddleware();
             $checkinDados = json_decode(file_get_contents("php://input"), true);
 
-           
+            
 
             echo json_encode($this->checkinService->criarCheckin($checkinDados, $tokenJWT));
             exit;
@@ -93,14 +51,14 @@ class CheckinController
         }
     }
 
-
+   
 
     public function atualizarCheckin()
     {
         try {
-            $tokenJWT = $this->validarToken();
+            $tokenJWT =Auth::validarMiddleware();
             $checkinDados = json_decode(file_get_contents("php://input"), true);
-           
+         
             $idCheckin = $_GET['id_checkin'];
 
             echo json_encode($this->checkinService->atualizarCheckin($checkinDados, $idCheckin, $tokenJWT));
@@ -117,7 +75,7 @@ class CheckinController
 
     public function deletarCheckin () {
         try{
-        $tokenJWT = $this->validarToken();
+        $tokenJWT =Auth::validarMiddleware();
         $idCheckin = $_GET['id_checkin'];
 
         echo json_encode($this->checkinService->deletarCheckin($idCheckin, $tokenJWT));

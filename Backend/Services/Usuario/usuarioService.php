@@ -19,12 +19,13 @@ class UsuarioService
             throw new Exception('Dados inválidos', 400);
         }
 
-        $buscarUsuario = $this->db->prepare('SELECT * FROM usuario WHERE email = :email_usuario');
-        $buscarUsuario->execute([
-            ':email_usuario' => $emailUsuario
+        $buscar = $this->db->prepare('SELECT * FROM usuario WHERE email = :email');
+
+        $buscar->execute([
+            ':email' => $emailUsuario
         ]);
 
-        $usuario = $buscarUsuario->fetch();
+        $usuario = $buscar->fetch();
 
         if (empty($usuario)) {
             return [
@@ -42,7 +43,7 @@ class UsuarioService
 
     public function listarUsuarios()
     {
-        $query = $this->db->query('SELECT nome, email, cpf, cargo FROM usuario');
+        $query = $this->db->query("SELECT nome, email, cpf, cargo FROM usuario");
 
         $usuarios = $query->fetchAll();
 
@@ -52,19 +53,20 @@ class UsuarioService
         ];
     }
 
+
     public function criarUsuario($usuarioDados)
     {
         try {
             $usuarioDados['cpf'] = preg_replace('/\D/', '', $usuarioDados['cpf']);
 
-            $criarUsuario = $this->db->prepare('INSERT INTO usuario (nome, email, cpf, senha, cargo)
-        VALUES (:nome, :email, :cpf, :senha, :cargo)');
+            $criar = $this->db->prepare('INSERT INTO usuario (nome, email, senha, cpf, cargo)
+            VALUES (:nome, :email, :senha, :cpf, :cargo)');
 
-            $criarUsuario->execute([
+            $criar->execute([
                 ':nome' => $usuarioDados['nome'],
                 ':email' => $usuarioDados['email'],
-                ':cpf' => $usuarioDados['cpf'],
                 ':senha' => password_hash($usuarioDados['senha'], PASSWORD_DEFAULT),
+                ':cpf' => $usuarioDados['cpf'],
                 ':cargo' => $usuarioDados['cargo']
             ]);
 
@@ -88,7 +90,6 @@ class UsuarioService
     public function fazerLogin($usuarioDados, $chaveSecreta)
     {
         try {
-
             $usuario = $this->buscarUsuarioPorEmail($usuarioDados['email']);
 
             if ($usuario['sucesso'] === false) {
@@ -121,6 +122,7 @@ class UsuarioService
         }
     }
 
+
     public function atualizarUsuario($usuarioDados, $emailUsuario)
     {
         try {
@@ -129,22 +131,21 @@ class UsuarioService
                 throw new Exception('Dados inválidos', 400);
             }
 
+            $usuarioDados['cpf'] = preg_replace('/\D/', '', $usuarioDados['cpf']);
+
             $usuario = $this->buscarUsuarioPorEmail($emailUsuario);
 
             if ($usuario['sucesso'] === false) {
                 throw new Exception($usuario['mensagem'], $usuario['codigo']);
             }
 
-            $usuarioDados['cpf'] = preg_replace('/\D/', '', $usuarioDados['cpf']);
+            $atualizar = $this->db->prepare('UPDATE usuario set nome = :nome, email = :email, senha = :senha, cpf = :cpf, cargo = :cargo WHERE email = :email_antigo');
 
-            $atualizarUsuario = $this->db->prepare('UPDATE usuario SET nome = :nome, email = :email, senha = :senha,
-         cpf = :cpf, cargo = :cargo WHERE email = :email_antigo');
-
-            $atualizarUsuario->execute([
+            $atualizar->execute([
                 ':nome' => $usuarioDados['nome'],
                 ':email' => $usuarioDados['email'],
-                ':cpf' => $usuarioDados['cpf'],
                 ':senha' => password_hash($usuarioDados['senha'], PASSWORD_DEFAULT),
+                ':cpf' => $usuarioDados['cpf'],
                 ':cargo' => $usuarioDados['cargo'],
                 ':email_antigo' => $emailUsuario
             ]);
@@ -161,31 +162,33 @@ class UsuarioService
                 throw new Exception('CPF já em uso', 409);
             }
 
-            throw new Exception('Erro ao criar usuário', 500);
+            throw new Exception('Erro ao atualizar usuário', 500);
         }
     }
 
     public function deletarUsuario($emailUsuario)
     {
-        if (empty($emailUsuario)) {
-            throw new Exception('Dados inválidos', 400);
+        try {
+
+            $usuario = $this->buscarUsuarioPorEmail($emailUsuario);
+
+            if ($usuario['sucesso'] === false) {
+                throw new Exception($usuario['mensagem'], $usuario['codigo']);
+            }
+
+
+            $deletar = $this->db->prepare('DELETE FROM usuario WHERE email = :email');
+
+            $deletar->execute([
+                ':email' => $emailUsuario
+            ]);
+
+            return [
+                'sucesso' => true,
+                'mensagem' => 'Usuário deletado com sucesso'
+            ];
+        } catch (PDOException $e) {
+            throw new Exception('Erro ao deletar usuário', 500);
         }
-
-        $usuario = $this->buscarUsuarioPorEmail($emailUsuario);
-
-        if ($usuario['sucesso'] === false) {
-            throw new Exception($usuario['mensagem'], $usuario['codigo']);
-        }
-
-        $deletarUsuario = $this->db->prepare('DELETE FROM usuario WHERE email = :email');
-
-        $deletarUsuario->execute([
-            ':email' => $emailUsuario
-        ]);
-
-        return [
-            'sucesso' => true,
-            'mensagem' => 'Usuário deletado com sucesso'
-        ];
     }
 }

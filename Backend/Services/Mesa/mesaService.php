@@ -19,12 +19,13 @@ class MesaService
             throw new Exception('Dados inválidos', 400);
         }
 
-        $buscarMesa = $this->db->prepare('SELECT * FROM mesa WHERE id_mesa = :id_mesa');
-        $buscarMesa->execute([
+        $buscar = $this->db->prepare('SELECT * FROM mesa WHERE id_mesa = :id_mesa');
+
+        $buscar->execute([
             ':id_mesa' => $idMesa
         ]);
 
-        $mesa = $buscarMesa->fetch();
+        $mesa = $buscar->fetch();
 
         if (empty($mesa)) {
             return [
@@ -42,7 +43,7 @@ class MesaService
 
     public function listarMesas()
     {
-        $query = $this->db->query('SELECT * FROM mesa');
+        $query = $this->db->query("SELECT * FROM mesa");
 
         $mesas = $query->fetchAll();
 
@@ -52,18 +53,19 @@ class MesaService
         ];
     }
 
-    public function criarMesa($mesaDados)
+
+    public function criarMesas($mesaDados)
     {
         try {
+         
 
+            $criar = $this->db->prepare('INSERT INTO mesa (capacidade, restricao)
+            VALUES (:capacidade, :restricao)');
 
-            $criarMesa = $this->db->prepare('INSERT INTO mesa (capacidade, restricao)
-        VALUES (:capacidade, :restricao)');
-
-            $criarMesa->execute([
+            $criar->execute([
                 ':capacidade' => $mesaDados['capacidade'],
                 ':restricao' => $mesaDados['restricao']
-
+                
             ]);
 
             return [
@@ -71,14 +73,14 @@ class MesaService
                 'mensagem' => 'Mesa criada com sucesso'
             ];
         } catch (PDOException $e) {
-
-
-            throw new Exception('Erro ao criar Mesa', 500);
+            
+            throw new Exception('Erro ao criar mesa', 500);
         }
     }
 
 
    
+
 
     public function atualizarMesa($mesaDados, $idMesa)
     {
@@ -88,18 +90,17 @@ class MesaService
                 throw new Exception('Dados inválidos', 400);
             }
 
+            
+
             $mesa = $this->buscarMesaPorId($idMesa);
 
             if ($mesa['sucesso'] === false) {
                 throw new Exception($mesa['mensagem'], $mesa['codigo']);
             }
 
-            
+            $atualizar = $this->db->prepare('UPDATE mesa set capacidade = :capacidade, restricao = :restricao WHERE id_mesa = :id_mesa');
 
-            $atualizarMesa = $this->db->prepare('UPDATE mesa SET capacidade = :capacidade, restricao = :restricao
-            WHERE id_mesa = :id_mesa');
-
-            $atualizarMesa->execute([
+            $atualizar->execute([
                 ':capacidade' => $mesaDados['capacidade'],
                 ':restricao' => $mesaDados['restricao'],
                 ':id_mesa' => $idMesa
@@ -110,33 +111,35 @@ class MesaService
                 'mensagem' => 'Mesa atualizada com sucesso'
             ];
         } catch (PDOException $e) {
-           
+            
 
-            throw new Exception('Erro ao criar usuário', 500);
+            throw new Exception('Erro ao atualizar mesa', 500);
         }
     }
 
     public function deletarMesa($idMesa)
     {
-        if (empty($idMesa)) {
-            throw new Exception('Dados inválidos', 400);
+        try {
+
+            $mesa = $this->buscarMesaPorId($idMesa);
+
+            if ($mesa['sucesso'] === false) {
+                throw new Exception($mesa['mensagem'], $mesa['codigo']);
+            }
+
+
+            $deletar = $this->db->prepare('DELETE FROM mesa WHERE id_mesa = :id_mesa');
+
+            $deletar->execute([
+                ':id_mesa' => $idMesa
+            ]);
+
+            return [
+                'sucesso' => true,
+                'mensagem' => 'Mesa deletada com sucesso'
+            ];
+        } catch (PDOException $e) {
+            throw new Exception('Erro ao deletar mesa', 500);
         }
-
-        $mesa = $this->buscarMesaPorId($idMesa);
-
-        if ($mesa['sucesso'] === false) {
-            throw new Exception($mesa['mensagem'], $mesa['codigo']);
-        }
-
-        $deletarMesa = $this->db->prepare('DELETE FROM mesa WHERE id_mesa = :id_mesa');
-
-        $deletarMesa->execute([
-            ':id_mesa' => $idMesa
-        ]);
-
-        return [
-            'sucesso' => true,
-            'mensagem' => 'Mesa deletada com sucesso'
-        ];
     }
 }
