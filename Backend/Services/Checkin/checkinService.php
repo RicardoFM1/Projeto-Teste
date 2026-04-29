@@ -4,6 +4,8 @@ use Firebase\JWT\JWT;
 
 require_once __DIR__ . "/../../Connection/connection.php";
 
+date_default_timezone_set('America/Sao_Paulo');
+
 class CheckinService
 {
     protected $db;
@@ -61,12 +63,13 @@ class CheckinService
             $criar = $this->db->prepare('INSERT INTO checkin (usuario_idusuario, convidado_idconvidado, data_e_hora)
             VALUES (:usuario_idusuario, :convidado_idconvidado, :data_e_hora)');
 
-            $dataehora = new DateTime();            
+            $dataehora = new DateTime();   
+            $dataehoraFormatado = date("Y-m-d H:i:s", $dataehora->getTimestamp());        
 
             $criar->execute([
                 ':usuario_idusuario' => $tokenJWT->dados->id_usuario,
                 ':convidado_idconvidado' => $checkinDados['convidado_idconvidado'],
-                ':data_e_hora' => $dataehora->getTimestamp()
+                ':data_e_hora' => $dataehoraFormatado
             ]);
 
             return [
@@ -86,7 +89,7 @@ class CheckinService
             }
 
 
-            throw new Exception('Erro ao criar checkin', 500);
+            throw new Exception('Erro ao criar checkin' . $e->getMessage(), 500);
         }
     }
 
@@ -113,14 +116,15 @@ class CheckinService
                 throw new Exception('Sem permissão', 403);
             }
 
-            $dataehora = new DateTime();            
+           $dataehora = new DateTime();   
+            $dataehoraFormatado = date("Y-m-d H:i:s", $dataehora->getTimestamp());            
 
             $atualizar = $this->db->prepare('UPDATE checkin set convidado_idconvidado = :convidado_idconvidado,  data_e_hora = :data_e_hora
              WHERE id_checkin = :id_checkin');
 
             $atualizar->execute([
                 ':convidado_idconvidado' => $checkinDados['convidado_idconvidado'],
-                ':data_e_hora' => $dataehora->getTimestamp(),
+                ':data_e_hora' => $dataehoraFormatado,
                 ':id_checkin' => $idCheckin
             ]);
 
