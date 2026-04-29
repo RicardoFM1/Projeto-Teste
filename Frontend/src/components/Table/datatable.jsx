@@ -1,29 +1,42 @@
 import Table from "react-bootstrap/Table";
 
-function DataTable({ columns, rows }) {
+function DataTable({ columns, rows, keyField }) {
+
+  const hasData = rows && rows.length > 0
   return (
     <Table responsive bordered hover>
         <thead>
           <tr>
             {columns.map(col => (
               <th key={col.accessor}>{col.header}</th>
+              
             ))}
           </tr>
         </thead>
         <tbody>
-          {rows.map(row => (
-            <tr key={row.id}>
+          {hasData ? (
+
+            rows.map(row => (
+              <tr key={row[keyField]}>
+              
               {columns.map(col => (
-                <td key={col.accessor}>{row[col.accessor]}</td>
+                <td key={col.accessor}>{col.render ? col.render(row) : row[col.accessor]}</td>
+                
               ))}
             </tr>
-          ))}
+          ))
+        ) : (
+          <td colSpan={columns.length} className="text-center text-mute">
+            Nenhum dado a ser mostrado
+          </td>
+        )}
         </tbody>
       </Table>
   );
 }
 
-// Aprender a mapear dados e colocar na tabela.
+
 // Customizar a tabela
+
 
 export default DataTable;

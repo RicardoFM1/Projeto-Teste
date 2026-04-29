@@ -1,5 +1,5 @@
 .header {
-    z-index: 9999 !important;
+    z-index: 100 !important;
     position: sticky;
     top: 0
 }

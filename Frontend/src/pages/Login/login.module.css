@@ -1,0 +1,72 @@
+.loginWrapper {
+    min-height: 100vh;
+    /* Um fundo mais suave: off-white ou um degradê bem sutil */
+    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    display: flex;
+    align-items: center;
+    /* Opcional: Adicionar uma imagem de fundo bem clarinha com opacidade baixa */
+}
+
+.loginCard {
+    border-radius: 20px;
+    background-color: #ffffff;
+    /* Sombra mais suave e espalhada para um ar mais leve */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
+    border: 1px solid rgba(231, 177, 231, 0.3); /* Borda bem fina no tom do seu botão */
+}
+
+/* Título e Texto */
+.loginCard h2 {
+    font-family: 'Playfair Display', serif; /* Uma fonte serifada dá o tom de convite */
+    color: #555;
+    letter-spacing: 1px;
+}
+
+:global(.btn).btnLogin {
+   
+    background-color: rgba(231, 177, 231, 0.85);
+    border: none;
+    transition: all 0.4s ease;
+    width: 100%;
+    padding: 12px; 
+    font-weight: 500;
+    color: #5d4d5d !important; 
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+}
+
+.btnLogin:hover {
+    background-color: rgba(231, 177, 231, 1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(231, 177, 231, 0.4);
+}
+
+/* Ajustes nos inputs para ficarem mais delicados */
+:global(.input-group-text) {
+    background-color: transparent !important;
+    border-color: #eee !important;
+    color: #bca0bc !important; /* Ícones no tom do tema */
+}
+
+:global(.form-control) {
+    border-color: #eee !important;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+:global(.form-control:focus) {
+    border-color: rgba(231, 177, 231, 0.5) !important;
+    box-shadow: 0 0 0 0.2rem rgba(231, 177, 231, 0.1) !important;
+}
+
+/* Pequeno detalhe decorativo opcional no topo do card */
+.cardDecor {
+    height: 4px;
+    width: 60px;
+    background-color: rgba(231, 177, 231, 0.7);
+    margin: 0 auto 20px auto;
+    border-radius: 2px;
+}
