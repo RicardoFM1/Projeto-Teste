@@ -1,34 +1,22 @@
-
-
 .sidebar {
     margin-top: 65px;
     transition: all 0.5s ease !important;
     z-index: -99;
 }
 
-
 .font-casamento {
-    font-size: 14px; 
+    font-size: 14px;
     margin-top: 1.3rem !important;
     margin-bottom: 1rem;
     font-weight: bold;
     color: rgb(126, 124, 124) !important;
 }
 
+
 .botaoAtivo {
     background-color: rgb(231, 208, 231) !important;
     border-right: 5px solid rgba(231, 177, 231, 0.788) !important;
     font-weight: bold !important;
-    transition: all 0.1s ease !important;
+    transition: all 0.5s ease !important;
 }
-
-:global(.btn).btnSair {
-    background-color: rgb(247, 175, 175);
-    color: rgb(0, 0, 0) !important;
-    height: 35px;
-    width: 60px;
-    padding-left: 14px;
-
-}
-
 

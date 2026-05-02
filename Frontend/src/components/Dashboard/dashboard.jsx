@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import DashboardCard from "../Cards/Dashboard/dashboardCard";
-import DataTable from "../Table/datatable";
 import Api from "../../API/api";
 import { Button } from "react-bootstrap";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
+import DadosTable from "../Table/table";
+import { toast } from "react-toastify";
 
 function Dashboard() {
   const [usuarios, setUsuarios] = useState([]);
@@ -15,6 +15,10 @@ function Dashboard() {
 
       setUsuarios(res.data.dados);
     } catch (err) {
+      toast.error('Erro ao buscar usuários', {
+        position: "top-right",
+        autoClose: 3000,
+      });
       console.log(err);
     }
   };
@@ -65,8 +69,7 @@ function Dashboard() {
   return (
     <>
       <h1>Dashboard</h1>
-      <DashboardCard />
-      <DataTable columns={columns} rows={usuarios} keyField={"id_usuario"} />
+     <DadosTable columns={columns} rows={usuarios} keyField={"id_usuario"} />
     </>
   );
 }

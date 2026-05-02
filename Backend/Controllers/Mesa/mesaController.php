@@ -25,6 +25,8 @@ class MesaController
     public function listarMesas()
     {
         Auth::validarMiddleware();
+        http_response_code(200);
+
         echo json_encode($this->mesaService->listarMesas());
         exit;
     }
@@ -37,6 +39,7 @@ class MesaController
 
             $mesaDados = json_decode(file_get_contents("php://input"), true);
 
+            http_response_code(201);
 
 
             echo json_encode($this->mesaService->criarMesas($mesaDados));
@@ -62,6 +65,8 @@ class MesaController
 
             $idMesa = $_GET['id_mesa'];
 
+            http_response_code(200);
+
             echo json_encode($this->mesaService->atualizarMesa($mesaDados, $idMesa));
             exit;
         } catch (Exception $e) {
@@ -80,6 +85,8 @@ class MesaController
             Auth::validarMiddleware();
 
             $idMesa = $_GET['id_mesa'];
+
+            http_response_code(200);
 
             echo json_encode($this->mesaService->deletarMesa($idMesa));
             exit;

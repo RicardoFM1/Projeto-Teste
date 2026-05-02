@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Button, Form, Modal, Stack } from "react-bootstrap";
-import style from "./usuarioModal.module.css";
+import style from "./modalUsuario.module.css";
 
 function UsuarioModal({ data, handleClose, onSubmit, show, editando }) {
   const [formData, setFormData] = useState({
@@ -102,4 +102,4 @@ function UsuarioModal({ data, handleClose, onSubmit, show, editando }) {
   );
 }
 
-export default UsuarioModal;
+export default UsuarioModal

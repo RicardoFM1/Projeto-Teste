@@ -43,7 +43,7 @@ class UsuarioService
 
     public function listarUsuarios()
     {
-        $query = $this->db->query("SELECT id_usuario, nome, email, cpf, cargo FROM usuario");
+        $query = $this->db->query("SELECT id_usuario, nome, email, cpf, cargo FROM usuario ORDER BY id_usuario DESC");
 
         $usuarios = $query->fetchAll();
 

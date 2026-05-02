@@ -1,10 +1,12 @@
 import { use, useEffect, useState } from "react";
-import DataTable from "../Table/datatable";
 import Api from "../../API/api";
 import { Button } from "react-bootstrap";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
-import UsuarioModal from "../Modais/Usuario/usuarioModal";
+
+import DadosTable from "../Table/table";
+import UsuarioModal from "../Modais/Usuario/modalUsuario";
+import { toast } from "react-toastify";
 
 
 function Usuarios() {
@@ -21,6 +23,10 @@ function Usuarios() {
       setUsuarios(res.data.dados);
       console.log(res.data.dados);
     } catch (err) {
+      toast.error('Erro ao buscar usuários', {
+        position: "top-right",
+        autoClose: 3000,
+      });
       console.log(err);
     }
   };
@@ -80,15 +86,29 @@ function Usuarios() {
             const res = await Api.put(`/usuario?email_usuario=${dadosForm.email}`, dados)
 
             if(res.status === 200){
-                console.log('Usuário editado')
+                toast.success('Usuário editado', {
+                    position: "top-right",
+                    autoClose: 3000,
+                });
+                await buscarUsuarios();
+                setShowModal(false);
             }
         }else{
             const res = await Api.post('/usuario', dados)
              if(res.status === 201){
-                console.log('Usuário criado')
+                toast.success('Usuário criado', {
+                    position: "top-right",
+                    autoClose: 3000,
+                });
+                await buscarUsuarios();
+                setShowModal(false);
             }
         }
     }catch(err){
+        toast.error(err.response.data || 'Erro ao salvar usuário', {
+            position: "top-right",
+            autoClose: 3000,
+        });
         console.log('Erro ao enviar dados', err)
     }
   }
@@ -96,7 +116,7 @@ function Usuarios() {
   return (
     <>
       <h1>Usuários</h1>
-      <DataTable columns={columns} rows={usuarios} keyField={"id_usuario"} />
+      <DadosTable columns={columns} rows={usuarios} keyField={"id_usuario"} />
       <UsuarioModal data={dadosForm} handleClose={() => setShowModal(false)} show={showModal} onSubmit={enviarDados}/>
     </>
   );

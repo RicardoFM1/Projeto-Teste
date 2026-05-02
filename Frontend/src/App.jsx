@@ -1,10 +1,12 @@
-import { Container } from "react-bootstrap";
+
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 
 import { useState } from "react";
-import Home from "./pages/Home/home";
 import Login from "./pages/Login/login";
+import Home from "./pages/Home/home";
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from "react-toastify";
 
 
 function App() {
@@ -13,19 +15,10 @@ function App() {
 
   return (
     <>
+      <ToastContainer />
       <BrowserRouter>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <Home
-                telaAtiva={telaAtiva}
-                setTelaAtiva={setTelaAtiva}
-                show={show}
-                setShow={setShow}
-              />
-            }
-          />
+          <Route path="/" element={<Home show={show} setShow={setShow} telaAtiva={telaAtiva} setTelaAtiva={setTelaAtiva}/>} />
           <Route path="/login" element={<Login /> } />
         </Routes>
       </BrowserRouter>

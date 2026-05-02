@@ -24,15 +24,15 @@ class ConvidadoController
     public function validarDados($convidadoDados)
     {
         try {
-        $confirmacaoPermitida = ['confirmado', 'não confirmado', 'cancelado'];
+            $confirmacaoPermitida = ['confirmado', 'não confirmado', 'cancelado'];
 
-        $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
-            ->key('sobrenome', v::stringVal()->notEmpty()->length(1, 45))
-            ->key('email', v::email())
-            ->key('cpf', v::cpf())
-            ->key('categoria', v::stringVal()->notEmpty())
-            ->key('confirmacao', v::in($confirmacaoPermitida))
-            ->key('telefone', v::phone());
+            $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
+                ->key('sobrenome', v::stringVal()->notEmpty()->length(1, 45))
+                ->key('email', v::email())
+                ->key('cpf', v::cpf())
+                ->key('categoria', v::stringVal()->notEmpty())
+                ->key('confirmacao', v::in($confirmacaoPermitida))
+                ->key('telefone', v::phone());
 
             $esquema->assert($convidadoDados);
         } catch (NestedValidationException $e) {
@@ -67,6 +67,8 @@ class ConvidadoController
     public function listarConvidados()
     {
         Auth::validarMiddleware();
+        http_response_code(200);
+
         echo json_encode($this->convidadoService->listarConvidados());
         exit;
     }
@@ -79,7 +81,7 @@ class ConvidadoController
             $convidadoDados = json_decode(file_get_contents("php://input"), true);
 
             $this->validarDados($convidadoDados);
-
+            http_response_code(201);
             echo json_encode($this->convidadoService->criarConvidado($convidadoDados));
             exit;
         } catch (Exception $e) {
@@ -92,7 +94,7 @@ class ConvidadoController
         }
     }
 
-   
+
 
     public function atualizarConvidado()
     {
@@ -101,6 +103,8 @@ class ConvidadoController
             $convidadoDados = json_decode(file_get_contents("php://input"), true);
             $this->validarDados($convidadoDados);
             $emailConvidado = $_GET['email_convidado'];
+
+            http_response_code(200);
 
             echo json_encode($this->convidadoService->atualizarConvidado($convidadoDados, $emailConvidado));
             exit;
@@ -114,15 +118,18 @@ class ConvidadoController
         }
     }
 
-    public function deletarConvidado () {
-        try{
-        Auth::validarMiddleware();
-        $emailConvidado = $_GET['email_convidado'];
+    public function deletarConvidado()
+    {
+        try {
+            Auth::validarMiddleware();
+            $emailConvidado = $_GET['email_convidado'];
 
-        echo json_encode($this->convidadoService->deletarConvidado($emailConvidado));
-        exit;
-        }catch(Exception $e){
-             http_response_code($e->getCode());
+            http_response_code(200);
+
+            echo json_encode($this->convidadoService->deletarConvidado($emailConvidado));
+            exit;
+        } catch (Exception $e) {
+            http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => $e->getMessage()

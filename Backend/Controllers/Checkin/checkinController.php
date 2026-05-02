@@ -20,12 +20,14 @@ class CheckinController
         $this->chaveSecreta = $_ENV['JWT_SECRET_KEY'];
     }
 
-   
+
 
 
     public function listarCheckins()
     {
-       Auth::validarMiddleware();
+        Auth::validarMiddleware();
+        http_response_code(200);
+
         echo json_encode($this->checkinService->listarCheckins());
         exit;
     }
@@ -34,11 +36,11 @@ class CheckinController
     {
         try {
 
-            $tokenJWT =Auth::validarMiddleware();
+            $tokenJWT = Auth::validarMiddleware();
             $checkinDados = json_decode(file_get_contents("php://input"), true);
 
-            
 
+            http_response_code(201);
             echo json_encode($this->checkinService->criarCheckin($checkinDados, $tokenJWT));
             exit;
         } catch (Exception $e) {
@@ -51,15 +53,17 @@ class CheckinController
         }
     }
 
-   
+
 
     public function atualizarCheckin()
     {
         try {
-            $tokenJWT =Auth::validarMiddleware();
+            $tokenJWT = Auth::validarMiddleware();
             $checkinDados = json_decode(file_get_contents("php://input"), true);
-         
+
             $idCheckin = $_GET['id_checkin'];
+
+            http_response_code(200);
 
             echo json_encode($this->checkinService->atualizarCheckin($checkinDados, $idCheckin, $tokenJWT));
             exit;
@@ -73,15 +77,18 @@ class CheckinController
         }
     }
 
-    public function deletarCheckin () {
-        try{
-        $tokenJWT =Auth::validarMiddleware();
-        $idCheckin = $_GET['id_checkin'];
+    public function deletarCheckin()
+    {
+        try {
+            $tokenJWT = Auth::validarMiddleware();
+            $idCheckin = $_GET['id_checkin'];
 
-        echo json_encode($this->checkinService->deletarCheckin($idCheckin, $tokenJWT));
-        exit;
-        }catch(Exception $e){
-             http_response_code($e->getCode());
+            http_response_code(200);
+
+            echo json_encode($this->checkinService->deletarCheckin($idCheckin, $tokenJWT));
+            exit;
+        } catch (Exception $e) {
+            http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => $e->getMessage()

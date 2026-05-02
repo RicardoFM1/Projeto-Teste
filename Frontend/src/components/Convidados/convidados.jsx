@@ -5,30 +5,31 @@ import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import DadosTable from "../Table/table";
-import CheckinModalNovo from "../Modais/Checkin/modalCheckinNovo";
-import CheckinModalEditar from "../Modais/Checkin/modalCheckinEditar";
-import CheckinModalDeletar from "../Modais/Checkin/modalCheckinDeletar";
-import { toast } from "react-toastify";
+import ModalConvidadoNovo from "../Modais/Convidado/modalConvidadoNovo";
+import ConvidadoModalNovo from "../Modais/Convidado/modalConvidadoNovo";
+import ConvidadoModalEditar from "../Modais/Convidado/modalConvidadoEditar";
+import ConvidadoModalDeletar from "../Modais/Convidado/modalConvidadoDeletar";
+import { toast } from 'react-toastify';
 
 
 
-function Checkin() {
-    const [checkins, setCheckins] = useState([]);
+function Convidados() {
+    const [convidados, setConvidados] = useState([]);
     const [showModalNovo, setShowModalNovo] = useState(false);
-    const [showModalEditar, setShowModalEditar] = useState(false)
+    const [showModalEditar, setShowModalEditar] = useState(false);
     const [showModalDeletar, setShowModalDeletar] = useState(false);
     const [dadosForm, setDadosForm] = useState(null);
     const [editando, setEditando] = useState(false)
-    const [idCheckin, setIdCheckin] = useState(null)
+    const [emailConvidado, setEmailConvidado] = useState("")
 
-    const buscarCheckins = async () => {
+    const buscarConvidados = async () => {
         try {
-            const res = await Api.get("/checkin");
+            const res = await Api.get("/convidado");
 
-            setCheckins(res.data.dados);
+            setConvidados(res.data.dados);
             console.log(res.data.dados);
         } catch (err) {
-            toast.error('Erro ao buscar checkins', {
+            toast.error('Erro ao buscar convidados', {
                 position: "top-right",
                 autoClose: 3000,
             });
@@ -37,7 +38,7 @@ function Checkin() {
     };
 
     useEffect(() => {
-        buscarCheckins();
+        buscarConvidados();
     }, []);
 
 
@@ -47,19 +48,26 @@ function Checkin() {
         setShowModalEditar(true)
     };
 
-    const handleDelete = (id) => {
-        console.log("Excluindo", id);
-        setIdCheckin(id)
+    const handleDelete = async (email) => {
+        console.log("Excluindo", email);
+        setEmailConvidado(email)
         setShowModalDeletar(true)
     };
 
 
 
+
+
     const columns = [
-        { header: "Checkin Id", accessor: "id_checkin" },
-        { header: "Usuario Id", accessor: "usuario_idusuario" },
-        { header: "Convidado Id", accessor: "convidado_idconvidado" },
-        { header: "Data e hora", accessor: "data_e_hora" },
+        { header: "Id", accessor: "id_convidado" },
+        { header: "Nome", accessor: "nome" },
+        { header: "Sobrenome", accessor: "sobrenome" },
+        { header: "Email", accessor: "email" },
+        { header: "Cpf", accessor: "cpf" },
+        { header: "Telefone", accessor: "telefone" },
+        { header: "Categoria", accessor: "categoria" },
+        { header: "Confirmação", accessor: "confirmacao" },
+
         {
             header: "Acoes",
             accessor: "acoes",
@@ -77,7 +85,7 @@ function Checkin() {
                         className="ignorar-fonte-btn"
                         variant="danger"
                         size="sm"
-                        onClick={() => handleDelete(row.id_checkin)}
+                        onClick={() => handleDelete(row.email)}
                     >
                         <MdDelete />
                     </Button>
@@ -89,18 +97,17 @@ function Checkin() {
     const enviarDadosNovo = async (dados) => {
         try {
 
-            const res = await Api.post('/checkin', dados)
+            const res = await Api.post('/convidado', dados)
             if (res.status === 201) {
-                toast.success('Checkin criado', {
+                toast.success('Convidado criado', {
                     position: "top-right",
                     autoClose: 3000,
                 });
-                await buscarCheckins()
+                await buscarConvidados()
                 setShowModalNovo(false)
             }
-
         } catch (err) {
-            toast.error(err.response.data || 'Erro ao criar checkin', {
+            toast.error(err.response.data || 'Erro ao criar convidado', {
                 position: "top-right",
                 autoClose: 3000,
             });
@@ -111,21 +118,20 @@ function Checkin() {
     const enviarDadosEditar = async (dados, editando) => {
         try {
             if (editando) {
-                const res = await Api.put(`/checkin?id_checkin=${dadosForm.id_checkin}`, dados)
+                const res = await Api.put(`/convidado?email_convidado=${dadosForm.email}`, dados)
 
                 if (res.status === 200) {
-                    toast.success('Checkin editado', {
+                    toast.success('Convidado editado', {
                         position: "top-right",
                         autoClose: 3000,
                     });
-                    await buscarCheckins()
+                    await buscarConvidados()
                     setShowModalEditar(false)
-
                 }
-
             }
+
         } catch (err) {
-            toast.error(err.response.data || 'Erro ao editar checkin', {
+            toast.error(err.response.data || 'Erro ao editar convidado', {
                 position: "top-right",
                 autoClose: 3000,
             });
@@ -133,39 +139,42 @@ function Checkin() {
         }
     }
 
-    const deletarCheckin = async () => {
-        try{
-            const res = await Api.delete(`/checkin?id_checkin=${idCheckin}`)
 
-            if(res.status === 200){
-                toast.success('Checkin deletado', {
-                    position: "top-right",
-                    autoClose: 3000,
-                });
-                await buscarCheckins()
-                setShowModalDeletar(false)
-            }
-        }catch(err){
-            toast.error(err.response.data || 'Erro ao deletar checkin', {
+    const deletarConvidado = async () => {
+        console.log(emailConvidado)
+        try{
+           const res = await Api.delete(`/convidado?email_convidado=${emailConvidado}`)
+           if(res.status === 200){
+            toast.success('Convidado deletado', {
                 position: "top-right",
                 autoClose: 3000,
-            });  
+            });
+            await buscarConvidados()
+            setShowModalDeletar(false)
+           }
+        }catch(err){
+            toast.error(err.response.data || 'Erro ao deletar convidado', {
+                position: "top-right",
+                autoClose: 3000,
+            });
             console.log(err)
         }
     }
+    
 
     return (
         <>
-            <h1>Checkins</h1>
+            <h1>Convidados</h1>
+
             <Button onClick={() => setShowModalNovo(true)} className="my-3 ignorar-fonte-btn" variant="primary">
                 <IoMdAddCircleOutline /> Criar novo
             </Button>
-            <DadosTable columns={columns} rows={checkins} keyField={"id_checkin"} />
-            <CheckinModalNovo data={dadosForm} handleClose={() => setShowModalNovo(false)} show={showModalNovo} onSubmit={enviarDadosNovo} />
-            <CheckinModalEditar data={dadosForm} handleClose={() => setShowModalEditar(false)} show={showModalEditar} onSubmit={enviarDadosEditar} />
-            <CheckinModalDeletar deletar={deletarCheckin} handleClose={() => setShowModalDeletar(false)} show={showModalDeletar}/>
+            <DadosTable columns={columns} rows={convidados} keyField={"id_convidado"} />
+            <ConvidadoModalNovo data={dadosForm} handleClose={() => setShowModalNovo(false)} show={showModalNovo} onSubmit={enviarDadosNovo} />
+            <ConvidadoModalEditar data={dadosForm} handleClose={() => setShowModalEditar(false)} show={showModalEditar} onSubmit={enviarDadosEditar} />
+            <ConvidadoModalDeletar deletar={deletarConvidado} show={showModalDeletar} handleClose={() => setShowModalDeletar(false)}/> 
         </>
     );
 }
 
-export default Checkin;
+export default Convidados;

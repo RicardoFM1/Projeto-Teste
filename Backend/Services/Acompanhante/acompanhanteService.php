@@ -43,7 +43,7 @@ class AcompanhanteService
 
     public function listarAcompanhantes()
     {
-        $query = $this->db->query("SELECT * FROM acompanhante");
+        $query = $this->db->query("SELECT * FROM acompanhante ORDER BY id_acompanhante DESC");
 
         $acompanhante = $query->fetchAll();
 
