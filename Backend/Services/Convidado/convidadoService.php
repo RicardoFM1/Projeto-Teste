@@ -41,33 +41,32 @@ class ConvidadoService
         ];
     }
 
-    // public function buscarConvidadoPorMesaId($idMesa)
-    // {
-    //     if (empty($idMesa)) {
-    //         throw new Exception('Dados inválidos', 400);
-    //     }
+    public function buscarConvidadoPorMesaId($idMesa)
+    {
+        if (empty($idMesa)) {
+            throw new Exception('Dados inválidos', 400);
+        }
 
-    //     $buscar = $this->db->prepare('SELECT * FROM convidado WHERE mesa_idmesa = :mesa_idmesa');
+        $buscar = $this->db->prepare('SELECT * FROM convidado WHERE mesa_idmesa = :mesa_idmesa');
 
-    //     $buscar->execute([
-    //         ':mesa_idmesa' => $idMesa
-    //     ]);
+        $buscar->execute([
+            ':mesa_idmesa' => $idMesa
+        ]);
 
-    //     $convidados = $buscar->fetchAll();
+        $convidados = $buscar->fetchAll();
 
-    //     if (empty($convidados)) {
-    //         return [
-    //             'sucesso' => false,
-    //             'mensagem' => 'Convidado não encontrado',
-    //             'codigo' => 404
-    //         ];
-    //     }
+        if (empty($convidados)) {
+            return [
+                'sucesso' => true,
+                'dados' => $convidados ?? []
+            ];
+        }
 
-    //     return [
-    //         'sucesso' => true,
-    //         'dados' => $convidados
-    //     ];
-    // }
+        return [
+            'sucesso' => true,
+            'dados' => $convidados
+        ];
+    }
 
     public function listarConvidados()
     {
@@ -77,7 +76,8 @@ class ConvidadoService
 
         return [
             'sucesso' => true,
-            'dados' => $convidados
+            'dados' => $convidados,
+            'total' => count($convidados)
         ];
     }
 
@@ -93,17 +93,20 @@ class ConvidadoService
                 $convidadoDados['mesa_idmesa'] = null;
             }
 
-            // $convidadosReferenciaMesa = $this->buscarConvidadoPorMesaId($convidadoDados['mesa_idmesa']);
-            // $mesa = new MesaService();
-            // $mesaReferenciada = $mesa->buscarMesaPorId($convidadoDados['mesa_idmesa']);
+            if (!empty($convidadoDados['mesa_idmesa'])) {
+
+                $convidadosReferenciaMesa = $this->buscarConvidadoPorMesaId($convidadoDados['mesa_idmesa']);
+                $mesa = new MesaService();
+                $mesaReferenciada = $mesa->buscarMesaPorId($convidadoDados['mesa_idmesa']);
 
 
-            // if(count($convidadosReferenciaMesa['dados']) >= $mesaReferenciada['dados']['capacidade']){
-            //     throw new Exception('Mesa lotada', 409);
-            // }
+                if (count($convidadosReferenciaMesa['dados']) >= $mesaReferenciada['dados']['capacidade']) {
+                    throw new Exception('Mesa lotada', 409);
+                }
+            }
 
-            $criar = $this->db->prepare('INSERT INTO convidado (nome, sobrenome, email, cpf, categoria, confirmacao, telefone, mesa_idmesa)
-            VALUES (:nome, :sobrenome, :email, :cpf, :categoria, :confirmacao, :telefone, :mesa_idmesa)');
+            $criar = $this->db->prepare('INSERT INTO convidado (nome, sobrenome, email, cpf, categoria, telefone, mesa_idmesa)
+            VALUES (:nome, :sobrenome, :email, :cpf, :categoria, :telefone, :mesa_idmesa)');
 
             $criar->execute([
                 ':nome' => $convidadoDados['nome'],
@@ -111,7 +114,6 @@ class ConvidadoService
                 ':email' => $convidadoDados['email'],
                 ':cpf' => $convidadoDados['cpf'],
                 ':categoria' => $convidadoDados['categoria'],
-                ':confirmacao' => $convidadoDados['confirmacao'],
                 ':telefone' => $convidadoDados['telefone'],
                 ':mesa_idmesa' => $convidadoDados['mesa_idmesa']
             ]);
@@ -161,15 +163,26 @@ class ConvidadoService
             if ($convidado['sucesso'] === false) {
                 throw new Exception($convidado['mensagem'], $convidado['codigo']);
             }
-            
-            // $convidadosReferenciaMesa = $this->buscarConvidadoPorMesaId($convidadoDados['mesa_idmesa']);
-            // $mesa = new MesaService();
-            // $mesaReferenciada = $mesa->buscarMesaPorId($convidadoDados['mesa_idmesa']);
+
+            if ($convidadoDados['confirmacao'] !== 'cancelado') {
+                throw new Exception('Confirmação inválida', 400);
+            }
+
+            if ($convidado['dados']['confirmacao'] === 'confirmado') {
+                throw new Exception('Impossível atualizar um convidado já confirmado');
+            }
+
+            if (!empty($convidadoDados['mesa_idmesa'])) {
+
+                $convidadosReferenciaMesa = $this->buscarConvidadoPorMesaId($convidadoDados['mesa_idmesa']);
+                $mesa = new MesaService();
+                $mesaReferenciada = $mesa->buscarMesaPorId($convidadoDados['mesa_idmesa']);
 
 
-            // if(count($convidadosReferenciaMesa['dados']) >= $mesaReferenciada['dados']['capacidade']){
-            //     throw new Exception('Mesa lotada', 409);
-            // }
+                if (count($convidadosReferenciaMesa['dados']) >= $mesaReferenciada['dados']['capacidade']) {
+                    throw new Exception('Mesa lotada', 409);
+                }
+            }
 
             $atualizar = $this->db->prepare('UPDATE convidado set nome = :nome, sobrenome = :sobrenome,  email = :email, cpf = :cpf, categoria = :categoria,
             confirmacao = :confirmacao, telefone = :telefone, mesa_idmesa = :mesa_idmesa WHERE email = :email_antigo');
@@ -217,6 +230,10 @@ class ConvidadoService
                 throw new Exception($convidado['mensagem'], $convidado['codigo']);
             }
 
+            if ($convidado['dados']['confirmacao'] === 'confirmado') {
+                throw new Exception('Impossível deletar um convidado já confirmado');
+            }
+
 
             $deletar = $this->db->prepare('DELETE FROM convidado WHERE email = :email');
 
@@ -229,6 +246,10 @@ class ConvidadoService
                 'mensagem' => 'Convidado deletado com sucesso'
             ];
         } catch (PDOException $e) {
+            if (str_contains($e->getMessage(), 'parent row')) {
+                throw new Exception('Impossível deletar um convidado referenciado');
+            }
+
             throw new Exception('Erro ao deletar convidado', 500);
         }
     }
