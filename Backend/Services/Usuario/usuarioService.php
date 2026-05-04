@@ -38,6 +38,7 @@ class UsuarioService
         return [
             'sucesso' => true,
             'dados' => $usuario
+           
         ];
     }
 
@@ -49,7 +50,8 @@ class UsuarioService
 
         return [
             'sucesso' => true,
-            'dados' => $usuarios
+            'dados' => $usuarios,
+            'total' => count($usuarios)
         ];
     }
 
@@ -188,6 +190,10 @@ class UsuarioService
                 'mensagem' => 'Usuário deletado com sucesso'
             ];
         } catch (PDOException $e) {
+            if(str_contains($e->getMessage(), 'parent row')){
+                throw new Exception('Impossível deletar um usuário referenciado', 409);
+            }
+
             throw new Exception('Erro ao deletar usuário', 500);
         }
     }
