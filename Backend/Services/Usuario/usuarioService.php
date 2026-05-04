@@ -108,7 +108,8 @@ class UsuarioService
                 'exp' => time() + 10000,
                 'dados' => [
                     'id_usuario' => $usuario['dados']['id_usuario'],
-                    'cargo_usuario' => $usuario['dados']['cargo']
+                    'cargo_usuario' => $usuario['dados']['cargo'],
+                    'email_usuario' => $usuario['dados']['email']
                 ]
             ];
 
