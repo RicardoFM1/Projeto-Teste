@@ -45,11 +45,12 @@ class AcompanhanteService
     {
         $query = $this->db->query("SELECT * FROM acompanhante ORDER BY id_acompanhante DESC");
 
-        $acompanhante = $query->fetchAll();
+        $acompanhantes = $query->fetchAll();
 
         return [
             'sucesso' => true,
-            'dados' => $acompanhante
+            'dados' => $acompanhantes,
+            'total' => count($acompanhantes)
         ];
     }
 
