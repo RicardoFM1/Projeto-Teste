@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, Form, Modal, Stack } from "react-bootstrap";
 import style from "./modalConvidado.module.css";
 
-function ConvidadoModal ({ dados, handleClose, onSubmit, show }) {
+function ConvidadoModal ({ mesas, dados, handleClose, onSubmit, show }) {
   const [formData, setFormData] = useState({
     nome: "",
     sobrenome: "",
@@ -125,13 +125,17 @@ function ConvidadoModal ({ dados, handleClose, onSubmit, show }) {
               />
             </Form.Group>
             <Form.Group>
-              <Form.Label>Numero da mesa (Opcional)</Form.Label>
-              <Form.Control
-              type="number"
+              <Form.Label>Mesa (Opcional)</Form.Label>
+              <Form.Select
                 name="mesa_idmesa"
                 value={formData.mesa_idmesa}
                 onChange={handleChange}
-              />
+              >
+                <option value="">Selecione uma mesa disponível</option>
+                {mesas.map(mesa => (
+                  <option value={mesa.id_mesa}>Número {mesa.id_mesa} - Capacidade: {mesa.capacidade}</option>
+                ))}
+              </Form.Select>
             </Form.Group>
           </Stack>
         </Modal.Body>

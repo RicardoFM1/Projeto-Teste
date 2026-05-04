@@ -1,7 +1,7 @@
 .loginWrapper {
     min-height: 100vh;
  
-    background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+    background: linear-gradient(135deg, #ecdddd 0%, #ebedee 100%);
     display: flex;
     align-items: center;
     
@@ -10,7 +10,7 @@
 .loginCard {
     border-radius: 20px;
     background-color: #ffffff;
- 
+     background-image: linear-gradient(180deg, rgba(231, 177, 231, 0.788), rgba(241, 204, 241, 0.959) 50%);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05) !important;
     border: 1px solid rgba(231, 177, 231, 0.3); 
 }
@@ -70,3 +70,4 @@
     margin: 0 auto 20px auto;
     border-radius: 2px;
 }
+

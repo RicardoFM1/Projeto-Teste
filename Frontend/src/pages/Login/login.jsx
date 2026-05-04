@@ -47,7 +47,7 @@ function Login() {
     return (
         <>
             <div className={style.loginWrapper}>
-                <Container>
+                <Container >
                     <Row className="justify-content-center align-items-center vh-100">
                         <Col md={6} lg={4}>
                             <Card className={`border-0 shadow-lg ${style.loginCard}`}>

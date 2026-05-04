@@ -11,6 +11,7 @@ import ModalDeletar from "../Modais/Deletar/modalDeletar";
 
 function Convidados() {
   const [convidados, setConvidados] = useState([]);
+  const [mesas, setMesas] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showModalDeletar, setShowModalDeletar] = useState(false);
   const [dadosForm, setDadosForm] = useState(null);
@@ -29,8 +30,21 @@ function Convidados() {
     }
   };
 
+   const buscarMesas = async () => {
+    try {
+      const res = await Api.get("/mesa");
+
+      setMesas(res.data.dados);
+      console.log(res.data.dados);
+    } catch (err) {
+      toast.error("Erro ao buscar mesas");
+      console.log(err);
+    }
+  };
+
   useEffect(() => {
     buscarConvidados();
+    buscarMesas()
   }, []);
 
   const handleEdit = (row) => {
@@ -151,6 +165,7 @@ function Convidados() {
         keyField={"id_convidado"}
       />
       <ConvidadoModal
+        mesas={mesas}
         dados={dadosForm}
         handleClose={() => setShowModal(false)}
         show={showModal}
