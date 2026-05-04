@@ -67,12 +67,12 @@ class AcompanhanteController
     public function validarDados($convidadoDados)
     {
         try {
-       
 
-        $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
-            ->key('sobrenome', v::stringVal()->notEmpty()->length(1, 45))
-            ->key('cpf', v::cpf())
-            ->key('idade', v::intVal()->notEmpty());
+
+            $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
+                ->key('sobrenome', v::stringVal()->notEmpty()->length(1, 45))
+                ->key('cpf', v::cpf())
+                ->key('idade', v::intVal()->notEmpty());
 
             $esquema->assert($convidadoDados);
         } catch (NestedValidationException $e) {
@@ -90,6 +90,8 @@ class AcompanhanteController
                 $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
             }
 
+            http_response_code(400);
+
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => 'Erros de validação',
@@ -103,7 +105,8 @@ class AcompanhanteController
 
     public function listarAcompanhantes()
     {
-       Auth::validarMiddleware();
+        Auth::validarMiddleware();
+        http_response_code(200);
         echo json_encode($this->acompanhanteService->listarAcompanhantes());
         exit;
     }
@@ -112,10 +115,11 @@ class AcompanhanteController
     {
         try {
 
-           Auth::validarMiddleware();
+            Auth::validarMiddleware();
             $acompanhanteDados = json_decode(file_get_contents("php://input"), true);
 
             $this->validarDados($acompanhanteDados);
+            http_response_code(201);
 
             echo json_encode($this->acompanhanteService->criarAcompanhante($acompanhanteDados));
             exit;
@@ -129,15 +133,16 @@ class AcompanhanteController
         }
     }
 
-   
+
 
     public function atualizarAcompanhante()
     {
         try {
-           Auth::validarMiddleware();
+            Auth::validarMiddleware();
             $acompanhanteDados = json_decode(file_get_contents("php://input"), true);
             $this->validarDados($acompanhanteDados);
             $idAcompanhante = $_GET['id_acompanhante'];
+            http_response_code(200);
 
             echo json_encode($this->acompanhanteService->atualizarAcompanhante($acompanhanteDados, $idAcompanhante));
             exit;
@@ -151,15 +156,17 @@ class AcompanhanteController
         }
     }
 
-    public function deletarAcompanhante () {
-        try{
-       Auth::validarMiddleware();
-        $idAcompanhante = $_GET['id_acompanhante'];
+    public function deletarAcompanhante()
+    {
+        try {
+            Auth::validarMiddleware();
+            $idAcompanhante = $_GET['id_acompanhante'];
+            http_response_code(200);
 
-        echo json_encode($this->acompanhanteService->deletarAcompanhante($idAcompanhante));
-        exit;
-        }catch(Exception $e){
-             http_response_code($e->getCode());
+            echo json_encode($this->acompanhanteService->deletarAcompanhante($idAcompanhante));
+            exit;
+        } catch (Exception $e) {
+            http_response_code($e->getCode());
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => $e->getMessage()

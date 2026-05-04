@@ -1,7 +1,8 @@
 .sidebar {
-    margin-top: 65px;
     transition: all 0.5s ease !important;
-    z-index: -99;
+    z-index: 1000;
+    position: fixed;
+    background-image: linear-gradient(180deg, rgba(185, 94, 238, 0.788), rgba(241, 204, 241, 0.959) 50%);
 }
 
 .font-casamento {

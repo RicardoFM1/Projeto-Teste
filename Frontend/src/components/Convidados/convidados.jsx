@@ -5,176 +5,165 @@ import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import DadosTable from "../Table/table";
-import ModalConvidadoNovo from "../Modais/Convidado/modalConvidadoNovo";
-import ConvidadoModalNovo from "../Modais/Convidado/modalConvidadoNovo";
-import ConvidadoModalEditar from "../Modais/Convidado/modalConvidadoEditar";
-import ConvidadoModalDeletar from "../Modais/Convidado/modalConvidadoDeletar";
-import { toast } from 'react-toastify';
-
-
+import { toast } from "react-toastify";
+import ConvidadoModal from "../Modais/Convidado/modalConvidado";
+import ModalDeletar from "../Modais/Deletar/modalDeletar";
 
 function Convidados() {
-    const [convidados, setConvidados] = useState([]);
-    const [showModalNovo, setShowModalNovo] = useState(false);
-    const [showModalEditar, setShowModalEditar] = useState(false);
-    const [showModalDeletar, setShowModalDeletar] = useState(false);
-    const [dadosForm, setDadosForm] = useState(null);
-    const [editando, setEditando] = useState(false)
-    const [emailConvidado, setEmailConvidado] = useState("")
+  const [convidados, setConvidados] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [showModalDeletar, setShowModalDeletar] = useState(false);
+  const [dadosForm, setDadosForm] = useState(null);
+  const [editando, setEditando] = useState(false);
+  
 
-    const buscarConvidados = async () => {
-        try {
-            const res = await Api.get("/convidado");
+  const buscarConvidados = async () => {
+    try {
+      const res = await Api.get("/convidado");
 
-            setConvidados(res.data.dados);
-            console.log(res.data.dados);
-        } catch (err) {
-            toast.error('Erro ao buscar convidados', {
-                position: "top-right",
-                autoClose: 3000,
-            });
-            console.log(err);
-        }
-    };
-
-    useEffect(() => {
-        buscarConvidados();
-    }, []);
-
-
-    const handleEdit = (row) => {
-        console.log("Editando", row);
-        setDadosForm(row)
-        setShowModalEditar(true)
-    };
-
-    const handleDelete = async (email) => {
-        console.log("Excluindo", email);
-        setEmailConvidado(email)
-        setShowModalDeletar(true)
-    };
-
-
-
-
-
-    const columns = [
-        { header: "Id", accessor: "id_convidado" },
-        { header: "Nome", accessor: "nome" },
-        { header: "Sobrenome", accessor: "sobrenome" },
-        { header: "Email", accessor: "email" },
-        { header: "Cpf", accessor: "cpf" },
-        { header: "Telefone", accessor: "telefone" },
-        { header: "Categoria", accessor: "categoria" },
-        { header: "Confirmação", accessor: "confirmacao" },
-
-        {
-            header: "Acoes",
-            accessor: "acoes",
-            render: (row) => (
-                <div className="d-flex gap-2">
-                    <Button
-                        className="ignorar-fonte-btn"
-                        variant="warning"
-                        size="sm"
-                        onClick={() => handleEdit(row)}
-                    >
-                        <CiEdit />
-                    </Button>
-                    <Button
-                        className="ignorar-fonte-btn"
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDelete(row.email)}
-                    >
-                        <MdDelete />
-                    </Button>
-                </div>
-            ),
-        },
-    ];
-
-    const enviarDadosNovo = async (dados) => {
-        try {
-
-            const res = await Api.post('/convidado', dados)
-            if (res.status === 201) {
-                toast.success('Convidado criado', {
-                    position: "top-right",
-                    autoClose: 3000,
-                });
-                await buscarConvidados()
-                setShowModalNovo(false)
-            }
-        } catch (err) {
-            toast.error(err.response.data || 'Erro ao criar convidado', {
-                position: "top-right",
-                autoClose: 3000,
-            });
-            console.log('Erro ao enviar dados', err)
-        }
+      setConvidados(res.data.dados);
+      console.log(res.data.dados);
+    } catch (err) {
+      toast.error("Erro ao buscar convidados");
+      console.log(err);
     }
+  };
 
-    const enviarDadosEditar = async (dados, editando) => {
-        try {
-            if (editando) {
-                const res = await Api.put(`/convidado?email_convidado=${dadosForm.email}`, dados)
+  useEffect(() => {
+    buscarConvidados();
+  }, []);
 
-                if (res.status === 200) {
-                    toast.success('Convidado editado', {
-                        position: "top-right",
-                        autoClose: 3000,
-                    });
-                    await buscarConvidados()
-                    setShowModalEditar(false)
-                }
-            }
-
-        } catch (err) {
-            toast.error(err.response.data || 'Erro ao editar convidado', {
-                position: "top-right",
-                autoClose: 3000,
-            });
-            console.log('Erro ao enviar dados', err)
-        }
-    }
-
-
-    const deletarConvidado = async () => {
-        console.log(emailConvidado)
-        try{
-           const res = await Api.delete(`/convidado?email_convidado=${emailConvidado}`)
-           if(res.status === 200){
-            toast.success('Convidado deletado', {
-                position: "top-right",
-                autoClose: 3000,
-            });
-            await buscarConvidados()
-            setShowModalDeletar(false)
-           }
-        }catch(err){
-            toast.error(err.response.data || 'Erro ao deletar convidado', {
-                position: "top-right",
-                autoClose: 3000,
-            });
-            console.log(err)
-        }
-    }
+  const handleEdit = (row) => {
     
+    setDadosForm(row);
+    setShowModal(true);
+  };
 
-    return (
-        <>
-            <h1>Convidados</h1>
+  const handleDelete = async (row) => {
+    
+    setDadosForm(row);
+    setShowModalDeletar(true);
+  };
 
-            <Button onClick={() => setShowModalNovo(true)} className="my-3 ignorar-fonte-btn" variant="primary">
-                <IoMdAddCircleOutline /> Criar novo
-            </Button>
-            <DadosTable columns={columns} rows={convidados} keyField={"id_convidado"} />
-            <ConvidadoModalNovo data={dadosForm} handleClose={() => setShowModalNovo(false)} show={showModalNovo} onSubmit={enviarDadosNovo} />
-            <ConvidadoModalEditar data={dadosForm} handleClose={() => setShowModalEditar(false)} show={showModalEditar} onSubmit={enviarDadosEditar} />
-            <ConvidadoModalDeletar deletar={deletarConvidado} show={showModalDeletar} handleClose={() => setShowModalDeletar(false)}/> 
-        </>
-    );
+  const columns = [
+    { header: "Id", accessor: "id_convidado" },
+    { header: "Nome", accessor: "nome" },
+    { header: "Sobrenome", accessor: "sobrenome" },
+    { header: "Email", accessor: "email" },
+    { header: "Cpf", accessor: "cpf" },
+    { header: "Telefone", accessor: "telefone" },
+    { header: "Categoria", accessor: "categoria" },
+    { header: "Confirmação", accessor: "confirmacao" },
+
+    {
+      header: "Acoes",
+      accessor: "acoes",
+      render: (row) => (
+        <div className="d-flex gap-2">
+          <Button
+            className="ignorar-fonte-btn"
+            variant="warning"
+            size="sm"
+            onClick={() => handleEdit(row)}
+          >
+            <CiEdit />
+          </Button>
+          <Button
+            className="ignorar-fonte-btn"
+            variant="danger"
+            size="sm"
+            onClick={() => handleDelete(row)}
+          >
+            <MdDelete />
+          </Button>
+        </div>
+      ),
+    },
+  ];
+
+  const enviarDadosForm = async (dados, editando) => {
+    try {
+      if (editando) {
+        const res = await Api.put(
+          `/convidado?email_convidado=${dadosForm.email}`,
+          dados,
+        );
+
+        if (res.status === 200) {
+          toast.success(res.data.mensagem);
+          await buscarConvidados();
+          setShowModal(false);
+        }
+      } else if (!editando) {
+        const res = await Api.post("/convidado", dados);
+        if (res.status === 201) {
+          toast.success(res.data.mensagem);
+          await buscarConvidados();
+          setShowModal(false);
+        }
+      }
+    } catch (err) {
+      const erros = err.response?.data?.erros;
+
+      if (erros) {
+        Object.values(erros).forEach((msg) => {
+          toast.error(msg);
+        });
+      } else {
+        toast.error(err.response?.data.mensagem || "Erro ao enviar dados");
+      }
+    }
+  };
+
+  const deletarConvidado = async () => {
+
+    try {
+      const res = await Api.delete(
+        `/convidado?email_convidado=${dadosForm.email}`,
+      );
+      if (res.status === 200) {
+        toast.success(res.data.mensagem);
+        await buscarConvidados();
+        setShowModalDeletar(false);
+      }
+    } catch (err) {
+      toast.error(err.response.data.mensagem || "Erro ao deletar convidado");
+    }
+  };
+
+  return (
+    <>
+      <h1>Convidados</h1>
+
+      <Button
+        onClick={() => {
+          setShowModal(true);
+          setDadosForm(null);
+        }}
+        className="my-3 ignorar-fonte-btn"
+        variant="primary"
+      >
+        <IoMdAddCircleOutline /> Criar novo
+      </Button>
+      <DadosTable
+        columns={columns}
+        rows={convidados}
+        keyField={"id_convidado"}
+      />
+      <ConvidadoModal
+        dados={dadosForm}
+        handleClose={() => setShowModal(false)}
+        show={showModal}
+        onSubmit={enviarDadosForm}
+      />
+
+      <ModalDeletar
+        deletar={deletarConvidado}
+        show={showModalDeletar}
+        handleClose={() => setShowModalDeletar(false)}
+      />
+    </>
+  );
 }
 
 export default Convidados;

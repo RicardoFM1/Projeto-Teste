@@ -15,7 +15,7 @@ function App() {
 
   return (
     <>
-      <ToastContainer />
+      <ToastContainer style={{zIndex: 1000000}} position="top-right" autoClose={3000} />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home show={show} setShow={setShow} telaAtiva={telaAtiva} setTelaAtiva={setTelaAtiva}/>} />

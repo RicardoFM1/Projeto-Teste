@@ -25,7 +25,7 @@ class UsuarioController
     {
         try {
             $cargosPermitidos = ['admin', 'ceremonialista'];
-        
+
             $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
                 ->key('email', v::email())
                 ->key('senha', v::stringVal()->notEmpty()->length(8, 255))
@@ -49,6 +49,7 @@ class UsuarioController
                 $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
             }
 
+            http_response_code(400);
             echo json_encode([
                 'sucesso' => false,
                 'mensagem' => 'Erros de validação',
@@ -75,6 +76,7 @@ class UsuarioController
 
     public function listarUsuarios()
     {
+        http_response_code(200);
 
         echo json_encode($this->usuarioService->listarUsuarios());
         exit;
@@ -88,6 +90,7 @@ class UsuarioController
             $usuarioDados = json_decode(file_get_contents("php://input"), true);
 
             $this->validarDados($usuarioDados);
+            http_response_code(201);
 
             echo json_encode($this->usuarioService->criarUsuario($usuarioDados));
             exit;
@@ -105,6 +108,7 @@ class UsuarioController
     {
         try {
             $usuarioDados = json_decode(file_get_contents("php://input"), true);
+            http_response_code(200);
 
             echo json_encode($this->usuarioService->fazerLogin($usuarioDados, $this->chaveSecreta));
             exit;
@@ -125,8 +129,9 @@ class UsuarioController
             $usuarioDados = json_decode(file_get_contents("php://input"), true);
             $this->validarDados($usuarioDados);
             $emailUsuario = $_GET['email_usuario'];
-
+            
             echo json_encode($this->usuarioService->atualizarUsuario($usuarioDados, $emailUsuario));
+            http_response_code(200);
             exit;
         } catch (Exception $e) {
             http_response_code($e->getCode());
@@ -143,6 +148,7 @@ class UsuarioController
         try {
             $this->apenasAdmin();
             $emailUsuario = $_GET['email_usuario'];
+            http_response_code(200);
 
             echo json_encode($this->usuarioService->deletarUsuario($emailUsuario));
             exit;

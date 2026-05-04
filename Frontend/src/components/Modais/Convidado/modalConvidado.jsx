@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, Form, Modal, Stack } from "react-bootstrap";
 import style from "./modalConvidado.module.css";
 
-function ConvidadoModalNovo ({ data, handleClose, onSubmit, show }) {
+function ConvidadoModal ({ dados, handleClose, onSubmit, show }) {
   const [formData, setFormData] = useState({
     nome: "",
     sobrenome: "",
@@ -10,12 +10,31 @@ function ConvidadoModalNovo ({ data, handleClose, onSubmit, show }) {
     cpf: "",
     telefone: "",
     confirmacao: "",
-    categoria: ""
+    categoria: "",
+    mesa_idmesa: null
   });
 
+  const [editando, setEditando] = useState(false);
 
- 
-    
+  useEffect(() => {
+    if (dados) {
+      setFormData(dados);
+      setEditando(true);
+    } else {
+      setFormData({
+        nome: "",
+        sobrenome: "",
+        email: "",
+        cpf: "",
+        telefone: "",
+        confirmacao: "",
+        categoria: "",
+        mesa_idmesa: null
+      });
+      setEditando(false);
+    }
+  }, [dados, show]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (!name) return;
@@ -25,15 +44,15 @@ function ConvidadoModalNovo ({ data, handleClose, onSubmit, show }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
-    onSubmit(formData);
+    const { id_checkin, ...restoDados } = formData;
+    onSubmit(restoDados, editando);
   };
 
   return (
-    <Modal style={{ zIndex: "10000" }} show={show} onHide={handleClose}>
-      <Form onSubmit={handleSubmit}>
+    <Modal style={{ zIndex: "1200" }} show={show} onHide={handleClose}>
+      <Form className={style.modal} onSubmit={handleSubmit}>
         <Modal.Header closeButton>
-          <Modal.Title>Novo convidado</Modal.Title>
+          <Modal.Title>{editando ? 'Editar convidado' : 'Novo convidado'}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <Stack gap={3}>
@@ -43,7 +62,7 @@ function ConvidadoModalNovo ({ data, handleClose, onSubmit, show }) {
                 name="nome"
                 value={formData.nome}
                 onChange={handleChange}
-                required
+                required={!editando}
               />
             </Form.Group>
             <Form.Group>
@@ -52,7 +71,7 @@ function ConvidadoModalNovo ({ data, handleClose, onSubmit, show }) {
                 name="sobrenome"
                 value={formData.sobrenome}
                 onChange={handleChange}
-                required
+                required={!editando}
               />
             </Form.Group>
             <Form.Group>
@@ -61,7 +80,7 @@ function ConvidadoModalNovo ({ data, handleClose, onSubmit, show }) {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                required
+                required={!editando}
               />
             </Form.Group>
             <Form.Group>
@@ -70,7 +89,7 @@ function ConvidadoModalNovo ({ data, handleClose, onSubmit, show }) {
                 name="cpf"
                 value={formData.cpf}
                 onChange={handleChange}
-                required
+                required={!editando}
               />
             </Form.Group>
             <Form.Group>
@@ -79,30 +98,39 @@ function ConvidadoModalNovo ({ data, handleClose, onSubmit, show }) {
                 name="telefone"
                 value={formData.telefone}
                 onChange={handleChange}
-                required
+                required={!editando}
               />
             </Form.Group>
+              {editando ? 
             <Form.Group>
               <Form.Label>Confirmacao</Form.Label>
               <Form.Select
-                name="confirmacao"
-                value={formData.confirmacao}
-                onChange={handleChange}
-                required
+              name="confirmacao"
+              value={formData.confirmacao}
+              onChange={handleChange}
+              required={!editando}
               >
                 <option value="">Selecione uma confirmacao...</option>
-                <option value="confirmado">Confirmado</option>
-                <option value="não confirmado">Não Confirmado</option>
                 <option value="cancelado">Cancelado</option>
               </Form.Select>
             </Form.Group>
+          : ''}
             <Form.Group>
               <Form.Label>Categoria</Form.Label>
               <Form.Control
                 name="categoria"
                 value={formData.categoria}
                 onChange={handleChange}
-                required
+                required={!editando}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Numero da mesa (Opcional)</Form.Label>
+              <Form.Control
+              type="number"
+                name="mesa_idmesa"
+                value={formData.mesa_idmesa}
+                onChange={handleChange}
               />
             </Form.Group>
           </Stack>
@@ -116,7 +144,7 @@ function ConvidadoModalNovo ({ data, handleClose, onSubmit, show }) {
             Cancelar
           </Button>
           <Button className={`btn ${style.btnSalvar}`} type="submit">
-            {"Criar novo"}
+            {editando ? "Salvar alterações" : 'Criar'}
           </Button>
         </Modal.Footer>
       </Form>
@@ -124,4 +152,4 @@ function ConvidadoModalNovo ({ data, handleClose, onSubmit, show }) {
   );
 }
 
-export default ConvidadoModalNovo
+export default ConvidadoModal

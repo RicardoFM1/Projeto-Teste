@@ -27,12 +27,8 @@ function SideBar({ telaAtiva, setTelaAtiva, show, setShow }) {
                 backdrop={false}
                 show={show}
             >
-                <Offcanvas.Header>
-                    <Offcanvas.Title className={style["font-casamento"]}>
-                        Navegação
-                    </Offcanvas.Title>
-                </Offcanvas.Header>
-                <Offcanvas.Body className="d-flex flex-column">
+                
+                <Offcanvas.Body className="d-flex flex-column mt-5">
                     <div className="mb-auto">
                         <p className={style["font-casamento"]}>ADMIN</p>
 
@@ -45,12 +41,7 @@ function SideBar({ telaAtiva, setTelaAtiva, show, setShow }) {
                                 <MdDashboard size={20} /> Dashboard
                             </Button>
 
-                            <Button
-                                onClick={() => setTelaAtiva("usuarios")}
-                                className={`btn ${telaAtiva === "usuarios" ? style.botaoAtivo : ""}`}
-                            >
-                                <FaUser size={20} /> Usuários
-                            </Button>
+                            
                         </Stack>
 
                         <p className={style["font-casamento"]}>ADMIN E CEREMONIALISTAS</p>
@@ -74,6 +65,12 @@ function SideBar({ telaAtiva, setTelaAtiva, show, setShow }) {
                                 className={`btn ${telaAtiva === "mesas" ? style.botaoAtivo : ""}`}
                             >
                                 <MdTableBar size={20} /> Mesas
+                            </Button>
+                            <Button
+                                onClick={() => setTelaAtiva("acompanhantes")}
+                                className={`btn ${telaAtiva === "acompanhantes" ? style.botaoAtivo : ""}`}
+                            >
+                                <MdTableBar size={20} /> Acompanhantes
                             </Button>
                         </Stack>
                     </div>

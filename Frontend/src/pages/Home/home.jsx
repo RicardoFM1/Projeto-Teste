@@ -2,7 +2,6 @@ import { Col, Container, Row } from "react-bootstrap";
 import Header from "../../components/Header/header";
 import SideBar from "../../components/Sidebar/sidebar";
 import Dashboard from "../../components/Dashboard/dashboard";
-import Usuarios from "../../components/Usuarios/usuarios";
 import Convidados from "../../components/Convidados/convidados";
 import Checkin from "../../components/Checkins/checkin";
 import Mesas from "../../components/Mesas/mesas";
@@ -29,7 +28,6 @@ function Home ({telaAtiva, setTelaAtiva, show, setShow}) {
             <Col xs={12} lg={show ? 8 : 12} className="px-5">
             <main style={{ minHeight: '100vh', padding: '20px', transition: 'all 0.5s'}}>
                 {telaAtiva === 'dashboard' && <Dashboard />}
-                {telaAtiva === 'usuarios' && <Usuarios />}
                 {telaAtiva === 'convidados' && <Convidados/>}
                 {telaAtiva === 'checkins' && <Checkin />}
                 {telaAtiva === 'mesas' && <Mesas />}

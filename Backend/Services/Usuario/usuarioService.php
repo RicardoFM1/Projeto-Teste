@@ -105,7 +105,7 @@ class UsuarioService
             }
 
             $payload = [
-                'exp' => time() + 3600,
+                'exp' => time() + 10000,
                 'dados' => [
                     'id_usuario' => $usuario['dados']['id_usuario'],
                     'cargo_usuario' => $usuario['dados']['cargo']

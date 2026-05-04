@@ -24,14 +24,12 @@ class ConvidadoController
     public function validarDados($convidadoDados)
     {
         try {
-            $confirmacaoPermitida = ['confirmado', 'não confirmado', 'cancelado'];
 
             $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
                 ->key('sobrenome', v::stringVal()->notEmpty()->length(1, 45))
                 ->key('email', v::email())
                 ->key('cpf', v::cpf())
                 ->key('categoria', v::stringVal()->notEmpty())
-                ->key('confirmacao', v::in($confirmacaoPermitida))
                 ->key('telefone', v::phone());
 
             $esquema->assert($convidadoDados);
@@ -43,8 +41,7 @@ class ConvidadoController
                 'email' => 'Email inválido',
                 'cpf' => 'Cpf inválido',
                 'categoria' => 'Categoria inválida',
-                'telefone' => 'Telefone inválido',
-                'confirmacao' => 'Confirmacao fora do escopo: confirmado, não confirmado ou cancelado'
+                'telefone' => 'Telefone inválido'
             ];
             $mensagemOriginal = $e->getMessages();
             $mensagemTraduzida = [];
@@ -52,6 +49,8 @@ class ConvidadoController
             foreach ($mensagemOriginal as $campo => $mensagem) {
                 $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
             }
+
+            http_response_code(400);
 
             echo json_encode([
                 'sucesso' => false,

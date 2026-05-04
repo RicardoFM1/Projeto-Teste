@@ -169,7 +169,7 @@ class ConvidadoService
             }
 
             if ($convidado['dados']['confirmacao'] === 'confirmado') {
-                throw new Exception('Impossível atualizar um convidado já confirmado');
+                throw new Exception('Impossível atualizar um convidado já confirmado', 400);
             }
 
             if (!empty($convidadoDados['mesa_idmesa'])) {
@@ -231,7 +231,7 @@ class ConvidadoService
             }
 
             if ($convidado['dados']['confirmacao'] === 'confirmado') {
-                throw new Exception('Impossível deletar um convidado já confirmado');
+                throw new Exception('Impossível deletar um convidado já confirmado', 400);
             }
 
 

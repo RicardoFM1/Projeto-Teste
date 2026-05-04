@@ -15,9 +15,9 @@ function Header({ telaAtiva, setTelaAtiva, show, setShow }) {
                     <Button className="m-1 ignorar-fonte-btn" variant="link" onClick={() => setShow(!show)}>
                         {show ? <RiMenuFoldFill size={25} /> : <RiMenuUnfoldFill size={25} />}
                     </Button>
+                <Navbar.Brand href="/">Senac Wedding</Navbar.Brand>
 
                 </Container>
-                <Navbar.Brand href="/">Senac Wedding</Navbar.Brand>
             </Navbar>
         </>
     );

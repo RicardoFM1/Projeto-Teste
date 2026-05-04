@@ -14,6 +14,8 @@ class RetrieveController
     public function retrieveUsuario()
     {
         try {
+            http_response_code(200);
+
             echo json_encode($this->retrieveService->retrieveUsuario());
             exit;
         } catch (Exception $e) {
