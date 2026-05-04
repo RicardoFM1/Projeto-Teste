@@ -49,7 +49,8 @@ class MesaService
 
         return [
             'sucesso' => true,
-            'dados' => $mesas
+            'dados' => $mesas,
+            'total' => count($mesas)
         ];
     }
 
