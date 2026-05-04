@@ -9,6 +9,7 @@ require_once __DIR__ . '/../Controllers/Convidado/convidadoController.php';
 require_once __DIR__ . '/../Controllers/Checkin/checkinController.php';
 require_once __DIR__ . '/../Controllers/Acompanhante/acompanhanteController.php';
 require_once __DIR__ . "/../Controllers/Dashboard/dashboardController.php";
+require_once __DIR__ . "/../Controllers/Retrieve/RetrieveController.php";
 
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: OPTIONS, GET, POST, PUT, DELETE');
@@ -102,12 +103,6 @@ if ($caminhoRequisicao === '/checkin') {
     if ($metodoRequisicao === 'POST') {
         $checkinController->criarCheckin();
     }
-    if ($metodoRequisicao === 'PUT') {
-        $checkinController->atualizarCheckin();
-    }
-    if ($metodoRequisicao === 'DELETE') {
-        $checkinController->deletarCheckin();
-    }
 }
 
 
@@ -136,5 +131,15 @@ if ($caminhoRequisicao === '/dashboard') {
 
     if ($metodoRequisicao === 'GET') {
         $dashboardController->listarDashboard();
+    }
+}
+
+// Rota Retrieve:
+
+if($caminhoRequisicao === "/retrieve"){
+    $retrieveController = new RetrieveController();
+
+    if($metodoRequisicao === 'GET'){
+        $retrieveController->retrieveUsuario();
     }
 }
