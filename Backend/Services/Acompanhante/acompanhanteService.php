@@ -43,7 +43,9 @@ class AcompanhanteService
 
     public function listarAcompanhantes()
     {
-        $query = $this->db->query("SELECT * FROM acompanhante ORDER BY id_acompanhante DESC");
+        $query = $this->db->query("SELECT a.id_acompanhante, a.nome, a.sobrenome,
+        a.cpf, a.idade, co.cpf as convidado_cpf FROM acompanhante a JOIN convidado co ON co.id_convidado = a.convidado_idconvidado
+         ORDER BY id_acompanhante DESC");
 
         $acompanhantes = $query->fetchAll();
 
@@ -59,19 +61,19 @@ class AcompanhanteService
     {
         try {
             $acompanhanteDados['cpf'] = preg_replace('/\D/', '', $acompanhanteDados['cpf']);
-           
 
-            
+
+
             $criar = $this->db->prepare('INSERT INTO acompanhante (nome, sobrenome, cpf, idade, convidado_idconvidado)
             VALUES (:nome, :sobrenome, :cpf, :idade, :convidado_idconvidado)');
 
             $criar->execute([
                 ':nome' => $acompanhanteDados['nome'],
                 ':sobrenome' => $acompanhanteDados['sobrenome'],
-                ':idade' => $acompanhanteDados['idade'], 
+                ':idade' => $acompanhanteDados['idade'],
                 ':cpf' => $acompanhanteDados['cpf'],
                 ':convidado_idconvidado' => $acompanhanteDados['convidado_idconvidado']
-                
+
             ]);
 
             return [
@@ -79,12 +81,12 @@ class AcompanhanteService
                 'mensagem' => 'Acompanhante criado com sucesso'
             ];
         } catch (PDOException $e) {
-           
+
             if (str_contains($e->getMessage(), 'cpf')) {
                 throw new Exception('CPF já em uso', 409);
             }
 
-             if (str_contains($e->getMessage(), 'fk_acompanhante_convidado')) {
+            if (str_contains($e->getMessage(), 'fk_acompanhante_convidado')) {
                 throw new Exception('Convidado referenciado não encontrada', 409);
             }
 
@@ -94,7 +96,7 @@ class AcompanhanteService
     }
 
 
-   
+
 
     public function atualizarAcompanhante($acompanhanteDados, $idAcompanhante)
     {
@@ -104,10 +106,10 @@ class AcompanhanteService
                 throw new Exception('Dados inválidos', 400);
             }
 
-             $acompanhanteDados['cpf'] = preg_replace('/\D/', '', $acompanhanteDados['cpf']);
-           
+            $acompanhanteDados['cpf'] = preg_replace('/\D/', '', $acompanhanteDados['cpf']);
 
-           
+
+
 
             $acompanhante = $this->buscarAcompanhantePorId($idAcompanhante);
 
@@ -119,9 +121,9 @@ class AcompanhanteService
             convidado_idconvidado = :convidado_idconvidado WHERE id_acompanhante = :id_acompanhante');
 
             $atualizar->execute([
-               ':nome' => $acompanhanteDados['nome'],
+                ':nome' => $acompanhanteDados['nome'],
                 ':sobrenome' => $acompanhanteDados['sobrenome'],
-                ':idade' => $acompanhanteDados['idade'], 
+                ':idade' => $acompanhanteDados['idade'],
                 ':cpf' => $acompanhanteDados['cpf'],
                 ':convidado_idconvidado' => $acompanhanteDados['convidado_idconvidado'],
                 ':id_acompanhante' => $idAcompanhante
@@ -132,12 +134,12 @@ class AcompanhanteService
                 'mensagem' => 'Acompanhante atualizado com sucesso'
             ];
         } catch (PDOException $e) {
-    
-           if (str_contains($e->getMessage(), 'cpf')) {
+
+            if (str_contains($e->getMessage(), 'cpf')) {
                 throw new Exception('CPF já em uso', 409);
             }
 
-             if (str_contains($e->getMessage(), 'fk_acompanhante_convidado')) {
+            if (str_contains($e->getMessage(), 'fk_acompanhante_convidado')) {
                 throw new Exception('Convidado referenciado não encontrada', 409);
             }
 

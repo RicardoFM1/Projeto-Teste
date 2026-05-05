@@ -68,6 +68,7 @@ function Convidados() {
     { header: "Telefone", accessor: "telefone" },
     { header: "Categoria", accessor: "categoria" },
     { header: "Confirmação", accessor: "confirmacao" },
+    { header: "Nº da mesa", accessor: "mesa_idmesa" },
 
     {
       header: "Acoes",

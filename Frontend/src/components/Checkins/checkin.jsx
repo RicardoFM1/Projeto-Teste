@@ -48,8 +48,8 @@ function Checkin() {
 
     const columns = [
         { header: "Checkin Id", accessor: "id_checkin" },
-        { header: "Usuario Id", accessor: "usuario_idusuario" },
-        { header: "Convidado Id", accessor: "convidado_idconvidado" },
+        { header: "CPF(Usuario)", accessor: "usuario_cpf" },
+        { header: "CPF(Convidado)", accessor: "convidado_cpf" },
         { header: "Data e hora", accessor: "data_e_hora" }
     ];
 

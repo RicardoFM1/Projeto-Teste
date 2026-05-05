@@ -46,7 +46,8 @@ class CheckinService
 
     public function listarCheckins()
     {
-        $query = $this->db->query("SELECT * FROM checkin");
+        $query = $this->db->query("SELECT c.id_checkin, u.cpf as usuario_cpf, co.cpf as convidado_cpf, c.data_e_hora FROM checkin c JOIN usuario u ON u.id_usuario = c.usuario_idusuario
+        JOIN convidado co ON co.id_convidado = c.convidado_idconvidado");
 
         $checkins = $query->fetchAll();
 

@@ -57,7 +57,7 @@ function Acompanhantes() {
     { header: "Sobrenome", accessor: "sobrenome" },
     { header: "CPF", accessor: "cpf" },
     { header: "Idade", accessor: "idade" },
-    { header: "Convidado Id", accessor: "convidado_idconvidado" },
+    { header: "CPF(convidado)", accessor: "convidado_cpf" },
     {
       header: "Ações",
       accessor: "acoes",
