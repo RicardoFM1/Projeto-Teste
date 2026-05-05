@@ -9,6 +9,8 @@ import Api from "../../API/api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import Acompanhantes from "../../components/Acompanhantes/acompanhantes";
+
 function Home({ telaAtiva, setTelaAtiva, show, setShow }) {
   const navigate = useNavigate();
   
@@ -53,6 +55,7 @@ function Home({ telaAtiva, setTelaAtiva, show, setShow }) {
               {telaAtiva === "convidados" && <Convidados />}
               {telaAtiva === "checkins" && <Checkin />}
               {telaAtiva === "mesas" && <Mesas />}
+              {telaAtiva === "acompanhantes" && <Acompanhantes />}
             </main>
           </Col>
         </Row>
@@ -60,5 +63,6 @@ function Home({ telaAtiva, setTelaAtiva, show, setShow }) {
     </>
   );
 }
+
 
 export default Home;
