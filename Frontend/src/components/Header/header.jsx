@@ -1,26 +1,20 @@
-
-import { useState } from "react";
-import { Container, Nav, Button, Navbar } from "react-bootstrap";
-import { RiMenuUnfoldFill } from "react-icons/ri";
-import { RiMenuFoldFill } from "react-icons/ri";
+import { Button, Container, Navbar } from "react-bootstrap";
 import style from "./header.module.css"
-
+import { AiOutlineMenuFold } from "react-icons/ai";
+import { AiOutlineMenuUnfold } from "react-icons/ai";
 
 function Header({ telaAtiva, setTelaAtiva, show, setShow }) {
+  console.log(show)
+  return (
+  
+  
+    <Navbar expand='lg' className={style.header}>
+      <Button onClick={() => setShow(!show)}>{show ? <AiOutlineMenuFold size={25} color="black" /> : <AiOutlineMenuUnfold size={25} color="black"/>}</Button>
+      <Navbar.Brand className="mx-2">Senac Wedding</Navbar.Brand>
+    </Navbar>
+  
 
-    return (
-        <>
-            <Navbar className={style.header} bg="dark" variant="dark" expand="lg" as="header">
-                <Container fluid>
-                    <Button className="m-1 ignorar-fonte-btn" variant="link" onClick={() => setShow(!show)}>
-                        {show ? <RiMenuFoldFill size={25} /> : <RiMenuUnfoldFill size={25} />}
-                    </Button>
-                <Navbar.Brand className="me-auto" href="/">Senac Wedding</Navbar.Brand>
-
-                </Container>
-            </Navbar>
-        </>
-    );
+  );
 }
 
 export default Header;

@@ -14,7 +14,7 @@
 }
 
 
-.botaoAtivo {
+:global(.btn) .botaoAtivo {
     background-color: rgb(231, 208, 231) !important;
     border-right: 5px solid rgba(231, 177, 231, 0.788) !important;
     font-weight: bold !important;

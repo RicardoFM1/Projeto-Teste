@@ -2,4 +2,5 @@
     z-index: 1100 ;
     position: sticky;
     top: 0;
+    background-image: linear-gradient(to right, rgba(185, 94, 238, 0.788), rgba(241, 204, 241, 0.959) 50%);
 }
