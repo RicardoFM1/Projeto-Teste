@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import Api from "../../API/api";
-import { Button } from "react-bootstrap";
+import { Button, Card } from "react-bootstrap";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import DadosTable from "../Table/table";
 import { toast } from "react-toastify";
+import style from "./acompanhantes.module.css"
 import AcompanhanteModal from "../Modais/Acompanhante/modalAcompanhante";
 import ModalDeletar from "../Modais/Deletar/modalDeletar";
 
@@ -19,7 +20,7 @@ function Acompanhantes() {
   const buscarAcompanhantes = async () => {
     try {
       const res = await Api.get("/acompanhante");
-      setAcompanhantes(res.data.dados);
+      setAcompanhantes(res.data);
     } catch (err) {
       toast.error("Erro ao buscar acompanhantes");
       console.log(err);
@@ -122,6 +123,15 @@ function Acompanhantes() {
   return (
     <>
       <h1>Acompanhantes</h1>
+      <Card className={style.card}>
+        <Card.Body className={style.cardBody}>
+          Total de acompanhantes:
+          <span className={style.cardSpan}>
+            {" "}
+            <strong>{acompanhantes?.total}</strong>{" "}
+          </span>
+        </Card.Body>
+      </Card>
       <Button
         onClick={() => {
           setShowModal(true);
@@ -132,7 +142,7 @@ function Acompanhantes() {
       >
         <IoMdAddCircleOutline /> Criar novo
       </Button>
-      <DadosTable columns={columns} rows={acompanhantes} keyField={"id_acompanhante"} />
+      <DadosTable columns={columns} rows={acompanhantes?.dados} keyField={"id_acompanhante"} />
       <AcompanhanteModal
         convidados={convidados}
         dados={dadosForm}

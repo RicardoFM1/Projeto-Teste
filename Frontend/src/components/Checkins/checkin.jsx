@@ -1,11 +1,12 @@
 import { use, useEffect, useState } from "react";
 import Api from "../../API/api";
-import { Button } from "react-bootstrap";
+import { Button, Card } from "react-bootstrap";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import DadosTable from "../Table/table";
 import { toast } from "react-toastify";
+import style from "./checkin.module.css"
 import CheckinModal from "../Modais/Checkin/modalCheckin";
 
 
@@ -20,7 +21,7 @@ function Checkin() {
         try {
             const res = await Api.get("/checkin");
 
-            setCheckins(res.data.dados);
+            setCheckins(res.data);
             console.log(res.data.dados);
         } catch (err) {
             toast.error('Erro ao buscar checkins');
@@ -73,10 +74,19 @@ function Checkin() {
     return (
         <>
             <h1>Checkins</h1>
+            <Card style={{ maxWidth: "20%" }} className="mb-3">
+        <Card.Body className={style.cardBody}>
+          Total de checkins:
+          <span className={style.cardSpan}>
+            {" "}
+            <strong>{checkins?.total}</strong>{" "}
+          </span>
+        </Card.Body>
+      </Card>
             <Button onClick={() => setShowModal(true)} className="my-3 ignorar-fonte-btn" variant="primary">
                 <IoMdAddCircleOutline /> Criar novo
             </Button>
-            <DadosTable columns={columns} rows={checkins} keyField={"id_checkin"} />
+            <DadosTable columns={columns} rows={checkins?.dados} keyField={"id_checkin"} />
             <CheckinModal convidados={convidados} handleClose={() => setShowModal(false)} show={showModal} onSubmit={enviarDados} />
            
             

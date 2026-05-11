@@ -1,0 +1,17 @@
+.cardSpan {
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  font-size: 32px;
+  padding-top: 10px;
+ 
+}
+
+.cardBody {
+    max-width: 200px;
+    background-image: linear-gradient(180deg, rgba(231, 177, 231, 0.788), rgba(241, 204, 241, 0.959) 50%);
+    min-height: 150px;
+    max-height: 150px; 
+    box-shadow: 5px 5px 10px 0px;
+}

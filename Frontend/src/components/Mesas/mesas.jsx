@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Api from "../../API/api";
-import { Button } from "react-bootstrap";
+import { Button, Card } from "react-bootstrap";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 import { IoMdAddCircleOutline } from "react-icons/io";
@@ -8,6 +8,7 @@ import DadosTable from "../Table/table";
 import { toast } from "react-toastify";
 import MesaModal from "../Modais/Mesa/modalMesa";
 import ModalDeletar from "../Modais/Deletar/modalDeletar";
+import style from "./mesas.module.css"
 
 function Mesas() {
   const [mesas, setMesas] = useState([]);
@@ -18,7 +19,7 @@ function Mesas() {
   const buscarMesas = async () => {
     try {
       const res = await Api.get("/mesa");
-      setMesas(res.data.dados);
+      setMesas(res.data);
     } catch (err) {
       toast.error("Erro ao buscar mesas");
       console.log(err);
@@ -107,6 +108,15 @@ function Mesas() {
   return (
     <>
       <h1>Mesas</h1>
+      <Card style={{ maxWidth: "20%" }} className="mb-3">
+        <Card.Body className={style.cardBody}>
+          Total de mesas:
+          <span className={style.cardSpan}>
+            {" "}
+            <strong>{mesas?.total}</strong>{" "}
+          </span>
+        </Card.Body>
+      </Card>
       <Button
         onClick={() => {
           setShowModal(true);
@@ -117,7 +127,7 @@ function Mesas() {
       >
         <IoMdAddCircleOutline /> Criar novo
       </Button>
-      <DadosTable columns={columns} rows={mesas} keyField={"id_mesa"} />
+      <DadosTable columns={columns} rows={mesas?.dados} keyField={"id_mesa"} />
       <MesaModal
         dados={dadosForm}
         handleClose={() => setShowModal(false)}

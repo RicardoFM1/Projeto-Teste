@@ -1,11 +1,12 @@
 import { use, useEffect, useState } from "react";
 import Api from "../../API/api";
-import { Button } from "react-bootstrap";
+import { Button, Card } from "react-bootstrap";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 import { IoMdAddCircleOutline } from "react-icons/io";
 import DadosTable from "../Table/table";
 import { toast } from "react-toastify";
+import style from "./convidados.module.css";
 import ConvidadoModal from "../Modais/Convidado/modalConvidado";
 import ModalDeletar from "../Modais/Deletar/modalDeletar";
 
@@ -16,21 +17,20 @@ function Convidados() {
   const [showModalDeletar, setShowModalDeletar] = useState(false);
   const [dadosForm, setDadosForm] = useState(null);
   const [editando, setEditando] = useState(false);
-  
 
   const buscarConvidados = async () => {
     try {
       const res = await Api.get("/convidado");
 
-      setConvidados(res.data.dados);
-      console.log(res.data.dados);
+      setConvidados(res.data);
+      console.log(res.data);
     } catch (err) {
       toast.error("Erro ao buscar convidados");
       console.log(err);
     }
   };
 
-   const buscarMesas = async () => {
+  const buscarMesas = async () => {
     try {
       const res = await Api.get("/mesa");
 
@@ -44,17 +44,15 @@ function Convidados() {
 
   useEffect(() => {
     buscarConvidados();
-    buscarMesas()
+    buscarMesas();
   }, []);
 
   const handleEdit = (row) => {
-    
     setDadosForm(row);
     setShowModal(true);
   };
 
   const handleDelete = async (row) => {
-    
     setDadosForm(row);
     setShowModalDeletar(true);
   };
@@ -131,7 +129,6 @@ function Convidados() {
   };
 
   const deletarConvidado = async () => {
-
     try {
       const res = await Api.delete(
         `/convidado?email_convidado=${dadosForm.email}`,
@@ -149,7 +146,15 @@ function Convidados() {
   return (
     <>
       <h1>Convidados</h1>
-
+      <Card style={{ maxWidth: "20%" }} className="mb-3">
+        <Card.Body className={style.cardBody}>
+          Total de convidados:
+          <span className={style.cardSpan}>
+            {" "}
+            <strong>{convidados?.total}</strong>{" "}
+          </span>
+        </Card.Body>
+      </Card>
       <Button
         onClick={() => {
           setShowModal(true);
@@ -162,7 +167,7 @@ function Convidados() {
       </Button>
       <DadosTable
         columns={columns}
-        rows={convidados}
+        rows={convidados?.dados}
         keyField={"id_convidado"}
       />
       <ConvidadoModal

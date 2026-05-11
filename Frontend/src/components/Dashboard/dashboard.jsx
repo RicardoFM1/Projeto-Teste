@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Api from "../../API/api";
-import { Button, Card, Stack } from "react-bootstrap";
+import { Button, Card, Container, Stack } from "react-bootstrap";
 import { CiEdit } from "react-icons/ci";
 import { MdDelete } from "react-icons/md";
 import DadosTable from "../Table/table";
@@ -16,13 +16,12 @@ function Dashboard() {
   const [showModalDeletar, setShowModalDeletar] = useState(false);
   const [deletando, setDeletando] = useState(false);
   const [dadosForm, setDadosForm] = useState([]);
- 
 
   const buscarUsuarios = async () => {
     try {
       const res = await Api.get("/usuario");
 
-      setUsuarios(res.data.dados);
+      setUsuarios(res.data);
     } catch (err) {
       toast.error("Erro ao buscar usuários");
       console.log(err);
@@ -96,7 +95,7 @@ function Dashboard() {
           `/usuario?email_usuario=${dadosForm?.email}`,
           dados,
         );
-        
+
         if (res.status === 200) {
           toast.success(res.data.mensagem);
           setShowModal(false);
@@ -105,16 +104,14 @@ function Dashboard() {
         }
       } else if (!editando) {
         const res = await Api.post("/usuario", dados);
-        
-        
+
         if (res.status === 201) {
           toast.success(res.data.mensagem);
           setShowModal(false);
           buscarUsuarios();
           buscarDashboard();
         }
-      } 
-      
+      }
     } catch (err) {
       const erros = err.response?.data?.erros;
 
@@ -129,18 +126,15 @@ function Dashboard() {
   };
 
   const deletar = async () => {
-    const res = await Api.delete(
-          `/usuario?email_usuario=${dadosForm?.email}`
-        );
-        
-        
-        if (res.status === 200) {
-          toast.success(res.data.mensagem);
-          setShowModalDeletar(false);
-          buscarUsuarios();
-          buscarDashboard();
-        }
-  }
+    const res = await Api.delete(`/usuario?email_usuario=${dadosForm?.email}`);
+
+    if (res.status === 200) {
+      toast.success(res.data.mensagem);
+      setShowModalDeletar(false);
+      buscarUsuarios();
+      buscarDashboard();
+    }
+  };
 
   return (
     <>
@@ -177,7 +171,7 @@ function Dashboard() {
         </Card>
         <Card>
           <Card.Body className={style.cardBody}>
-            Convidados confirmados: <br />
+            Convidados cancelados: <br />
             <span className={style.cardSpan}>
               <strong>
                 {dashboard?.convidados?.convidados_cancelados}
@@ -186,16 +180,28 @@ function Dashboard() {
           </Card.Body>
         </Card>
       </Stack>
+      <h1>Usuários:</h1>
       <Button
-        className="ignorar-fonte-btn mb-3 mt-3"
+        className="ignorar-fonte-btn mb-3 mt-2"
         onClick={() => {
           setShowModal(true);
-          setDadosForm(null)
+          setDadosForm(null);
         }}
       >
         Criar novo
       </Button>
-      <DadosTable columns={columns} rows={usuarios} keyField={"id_usuario"} />
+
+      <Card style={{ maxWidth: "20%" }} className="mb-3">
+        <Card.Body className={style.cardBody}>
+          Total de usuários:
+          <span className={style.cardSpan}>
+            {" "}
+            <strong>{usuarios?.total}</strong>{" "}
+          </span>
+        </Card.Body>
+      </Card>
+
+      <DadosTable columns={columns} rows={usuarios?.dados} keyField={"id_usuario"} />
       <UsuarioModal
         dados={dadosForm}
         handleClose={() => setShowModal(!showModal)}
