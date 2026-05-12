@@ -8,6 +8,8 @@ require_once __DIR__ . "/../Controllers/Mesa/mesaController.php";
 require_once __DIR__ . "/../Controllers/Convidado/convidadoController.php";
 require_once __DIR__ . "/../Controllers/Checkin/checkinController.php";
 require_once __DIR__ . "/../Controllers/Acompanhante/acompanhanteController.php";
+require_once __DIR__ . "/../Controllers/Dashboard/dashboardController.php";
+require_once __DIR__ . "/../Controllers/Retrieve/retrieveController.php";
 
 
 
@@ -98,7 +100,6 @@ if ($rotaRequisicao === '/checkin') {
     if ($metodoRequisicao === 'POST') {
         $checkinController->criarCheckin();
     }
-   
 }
 
 
@@ -116,5 +117,21 @@ if ($rotaRequisicao === '/convidado') {
     }
     if ($metodoRequisicao === 'DELETE') {
         $acompanhanteController->deletarAcompanhante();
+    }
+}
+
+if ($rotaRequisicao === '/dashboard') {
+    $dashboardController = new DashboardController();
+
+    if ($metodoRequisicao === 'GET') {
+        $dashboardController->listarDashboard();
+    }
+}
+
+if ($rotaRequisicao === '/retrieve') {
+    $retrieveController = new RetrieveController();
+
+    if ($metodoRequisicao === 'GET') {
+        $retrieveController->listarRetrieve();
     }
 }
