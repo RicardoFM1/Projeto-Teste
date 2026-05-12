@@ -24,7 +24,7 @@ class MesaController
 
 
             $esquema = v::key('capacidade', v::intVal()->notEmpty())
-                ->key('restricao', v::strinVal());
+                ->key('restricao', v::stringVal());
 
 
             $esquema->assert($dados);
@@ -42,11 +42,13 @@ class MesaController
                 $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
             }
 
-            return [
+            echo json_encode([
                 'sucesso' => false,
                 'mensagem' => 'Erros de validação',
                 'erros' => $mensagemTraduzida
-            ];
+            ]);
+            http_response_code(400);
+            exit;
         }
     }
 
@@ -74,6 +76,8 @@ class MesaController
 
             http_response_code(201);
             $dados = json_decode(file_get_contents('php://input'), true);
+            $this->validarDados($dados);
+
             echo json_encode($this->mesaService->criarMesa($dados));
         } catch (Exception $e) {
             http_response_code($e->getCode());
@@ -91,6 +95,8 @@ class MesaController
         try {
             Middleware::validarMiddleware();
             $dados = json_decode(file_get_contents('php://input'), true);
+            $this->validarDados($dados);
+
             $idMesa = $_GET['id_mesa'];
             http_response_code(200);
 

@@ -21,7 +21,7 @@ class AcompanhanteController
     public function validarDados($dados)
     {
         try {
-          
+
 
             $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
                 ->key('sobrenome', v::stringVal()->notEmpty()->length(1, 45))
@@ -29,7 +29,7 @@ class AcompanhanteController
                 ->key('cpf', v::cpf())
                 ->key('idade', v::intVal()->notEmpty())
                 ->key('convidado_idconvidado', v::intVal()->notEmpty());
-            
+
 
 
             $esquema->assert($dados);
@@ -41,7 +41,7 @@ class AcompanhanteController
                 'cpf' => 'Cpf inválido',
                 'idade' => 'Idade inválida',
                 'convidado_idconvidado' => 'Referência do convidado inválida'
-                
+
 
             ];
 
@@ -52,11 +52,13 @@ class AcompanhanteController
                 $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
             }
 
-            return [
+            echo json_encode([
                 'sucesso' => false,
                 'mensagem' => 'Erros de validação',
                 'erros' => $mensagemTraduzida
-            ];
+            ]);
+            http_response_code(400);
+            exit;
         }
     }
 
@@ -84,6 +86,7 @@ class AcompanhanteController
 
             http_response_code(201);
             $dados = json_decode(file_get_contents('php://input'), true);
+            $this->validarDados($dados);
             echo json_encode($this->acompanhanteService->criarAcompanhante($dados));
         } catch (Exception $e) {
             http_response_code($e->getCode());
@@ -101,6 +104,8 @@ class AcompanhanteController
         try {
             Middleware::validarMiddleware();
             $dados = json_decode(file_get_contents('php://input'), true);
+            $this->validarDados($dados);
+
             $emailAcompanhante = $_GET['email_acompanhante'];
             http_response_code(200);
 

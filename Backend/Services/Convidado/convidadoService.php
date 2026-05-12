@@ -27,7 +27,7 @@ class ConvidadoService
 
             $convidado = $buscar->fetch();
 
-            if (empty($mesa)) {
+            if (empty($convidado)) {
                 return [
                     'sucesso' => false,
                     'mensagem' => 'Convidado não encontrado pelo email',

@@ -54,11 +54,13 @@ class ConvidadoController
                 $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
             }
 
-            return [
+            echo json_encode([
                 'sucesso' => false,
                 'mensagem' => 'Erros de validação',
                 'erros' => $mensagemTraduzida
-            ];
+            ]);
+            http_response_code(400);
+            exit;
         }
     }
 
@@ -86,6 +88,8 @@ class ConvidadoController
 
             http_response_code(201);
             $dados = json_decode(file_get_contents('php://input'), true);
+            $this->validarDados($dados);
+
             echo json_encode($this->convidadoService->criarConvidado($dados));
         } catch (Exception $e) {
             http_response_code($e->getCode());
@@ -103,6 +107,8 @@ class ConvidadoController
         try {
             Middleware::validarMiddleware();
             $dados = json_decode(file_get_contents('php://input'), true);
+            $this->validarDados($dados);
+
             $emailConvidado = $_GET['email_convidado'];
             http_response_code(200);
 

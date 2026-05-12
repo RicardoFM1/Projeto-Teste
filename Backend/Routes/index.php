@@ -103,7 +103,7 @@ if ($rotaRequisicao === '/checkin') {
 }
 
 
-if ($rotaRequisicao === '/convidado') {
+if ($rotaRequisicao === '/acompanhante') {
     $acompanhanteController = new AcompanhanteController();
 
     if ($metodoRequisicao === 'GET') {

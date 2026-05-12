@@ -110,7 +110,7 @@ class AcompanhanteService
     {
         try {
             $acompanhanteDados['cpf'] = preg_replace('/\D/', '', $acompanhanteDados['cpf']);
-            $acompanhanteDados['telefone'] = preg_replace('/\D/', '', $acompanhanteDados['telefone']);
+           
 
             $acompanhante = $this->buscarAcompanhantePorEmail($emailAcompanhante);
 
@@ -120,7 +120,7 @@ class AcompanhanteService
 
            
             $atualizar = $this->db->prepare('UPDATE acompanhante SET nome = :nome, sobrenome = :sobrenome,
-            email = :email, cpf = :cpf, idade = :idade, convidado_idconvidado = :convidado_idconvidado, 
+            email = :email, cpf = :cpf, idade = :idade, convidado_idconvidado = :convidado_idconvidado
            WHERE email = :email_acompanhante');
 
             $atualizar->execute([

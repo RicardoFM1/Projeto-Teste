@@ -15,7 +15,7 @@ class Middleware
                 $token = $_SERVER['HTTP_AUTHORIZATION'];
             }
 
-            if (isset($_SERVEr['AUTHORIZATION'])) {
+            if (isset($_SERVER['AUTHORIZATION'])) {
                 $token = $_SERVER['AUTHORIZATION'];
             }
 

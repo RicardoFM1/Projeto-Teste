@@ -40,11 +40,13 @@ class CheckinController
                 $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
             }
 
-            return [
+            echo json_encode([
                 'sucesso' => false,
                 'mensagem' => 'Erros de validação',
                 'erros' => $mensagemTraduzida
-            ];
+            ]);
+            http_response_code(400);
+            exit;
         }
     }
 
@@ -72,6 +74,8 @@ class CheckinController
 
             http_response_code(201);
             $dados = json_decode(file_get_contents('php://input'), true);
+            $this->validarDados($dados);
+
             echo json_encode($this->checkinService->criarCheckin($dados, $jwt));
         } catch (Exception $e) {
             http_response_code($e->getCode());

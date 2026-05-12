@@ -58,7 +58,7 @@ class CheckinService
             $resultado = [];
 
             while ($row = $query->fetch()) {
-                $resultado = [
+                $resultado[] = [
                     'checkin' => [
                         'id_checkin' => $row['id_checkin'],
                         'data_e_hora' => $row['data_e_hora'],
@@ -82,12 +82,12 @@ class CheckinService
                         ]
                     ]
                 ];
-
-                return [
-                    'sucesso' => true,
-                    'dados' => $resultado
-                ];
             }
+
+            return [
+                'sucesso' => true,
+                'dados' => $resultado
+            ];
         } catch (PDOException $e) {
             throw new Exception('Erro ao tentar listar checkins', 500);
         }
@@ -98,7 +98,7 @@ class CheckinService
         try {
 
 
-            $dataFormatada = date('Y-m-d', $checkinDados['data_e_hora']);
+            $dataFormatada = date('Y-m-d');
 
             $buscarConvidado = $this->db->prepare('SELECT * FROM convidado WHERE id_convidado = :id_convidado');
 
@@ -106,19 +106,19 @@ class CheckinService
                 ':id_convidado' => $checkinDados['convidado_idconvidado']
             ]);
 
-            
+
             $convidado = $buscarConvidado->fetch();
-            
-            if(empty($convidado)){
+
+            if (empty($convidado)) {
                 throw new Exception('Convidado não encontrado para o checkin', 404);
             }
 
-            if(isset($convidado) && $convidado['confirmacao'] === 'confirmado'){
+            if (isset($convidado) && $convidado['confirmacao'] === 'confirmado') {
                 throw new Exception('Impossível fazer checkin de um convidado já confirmado', 409);
             }
 
-            
-            if(isset($convidado) && $convidado['confirmacao'] === 'cancelado'){
+
+            if (isset($convidado) && $convidado['confirmacao'] === 'cancelado') {
                 throw new Exception('Impossível fazer checkin de um convidado cancelado', 409);
             }
 
@@ -160,8 +160,4 @@ class CheckinService
             throw new Exception('Erro ao tentar criar checkin', 500);
         }
     }
-
-
-
-    
 }
