@@ -2,7 +2,7 @@
 
 use Firebase\JWT\JWT;
 
-require_once __DIR__ . "/../../Connection/connection.php";
+require_once __DIR__ . "/../../Connection/db.php";
 
 class MesaService
 {
@@ -10,63 +10,69 @@ class MesaService
 
     public function __construct()
     {
-        $this->db = dbConnection();
+        $this->db = db();
     }
 
     public function buscarMesaPorId($idMesa)
     {
-        if (empty($idMesa)) {
-            throw new Exception('Dados inválidos', 400);
-        }
+        try {
+            if (empty($idMesa)) {
+                throw new Exception('Id da mesa não enviado', 400);
+            }
 
-        $buscar = $this->db->prepare('SELECT * FROM mesa WHERE id_mesa = :id_mesa');
+            $buscar = $this->db->prepare('SELECT * FROM mesa WHERE id_mesa = :id_mesa');
+            $buscar->execute([
+                ':id_mesa' => $idMesa
+            ]);
 
-        $buscar->execute([
-            ':id_mesa' => $idMesa
-        ]);
+            $mesa = $buscar->fetch();
 
-        $mesa = $buscar->fetch();
+            if (empty($mesa)) {
+                return [
+                    'sucesso' => false,
+                    'mensagem' => 'Mesa não encontrada pelo id',
+                    'codigo' => 404
+                ];
+            }
 
-        if (empty($mesa)) {
             return [
-                'sucesso' => false,
-                'mensagem' => 'Mesa não encontrada',
-                'codigo' => 404
+                'sucesso' => true,
+                'dados' => $mesa
             ];
+        } catch (PDOException $e) {
+            throw new Exception('Erro ao buscar mesa por id', 500);
         }
-
-        return [
-            'sucesso' => true,
-            'dados' => $mesa
-        ];
     }
 
     public function listarMesas()
     {
-        $query = $this->db->query("SELECT * FROM mesa ORDER BY id_mesa DESC");
+        try {
 
-        $mesas = $query->fetchAll();
+            $query = $this->db->query("SELECT * FROM mesa");
 
-        return [
-            'sucesso' => true,
-            'dados' => $mesas,
-            'total' => count($mesas)
-        ];
+            $mesas = $query->fetchAll();
+
+            return [
+                'sucesso' => true,
+                'dados' => $mesas
+            ];
+        } catch (PDOException $e) {
+            throw new Exception('Erro ao tentar listar mesas', 500);
+        }
     }
 
-
-    public function criarMesas($mesaDados)
+    public function criarMesa($mesaDados)
     {
         try {
-         
+
+
 
             $criar = $this->db->prepare('INSERT INTO mesa (capacidade, restricao)
-            VALUES (:capacidade, :restricao)');
+        VALUES(:capacidade, :restricao)');
 
             $criar->execute([
                 ':capacidade' => $mesaDados['capacidade'],
                 ':restricao' => $mesaDados['restricao']
-                
             ]);
 
             return [
@@ -74,32 +80,26 @@ class MesaService
                 'mensagem' => 'Mesa criada com sucesso'
             ];
         } catch (PDOException $e) {
-            
-            throw new Exception('Erro ao criar mesa', 500);
+
+            throw new Exception('Erro ao tentar criar mesa', 500);
         }
     }
 
-
-   
 
 
     public function atualizarMesa($mesaDados, $idMesa)
     {
         try {
-
-            if (empty($idMesa)) {
-                throw new Exception('Dados inválidos', 400);
-            }
-
-            
-
             $mesa = $this->buscarMesaPorId($idMesa);
 
             if ($mesa['sucesso'] === false) {
                 throw new Exception($mesa['mensagem'], $mesa['codigo']);
             }
 
-            $atualizar = $this->db->prepare('UPDATE mesa set capacidade = :capacidade, restricao = :restricao WHERE id_mesa = :id_mesa');
+
+
+            $atualizar = $this->db->prepare('UPDATE mesa SET capacidade = :capacidade, restricao = :restricao
+             WHERE id_mesa = :id_mesa');
 
             $atualizar->execute([
                 ':capacidade' => $mesaDados['capacidade'],
@@ -112,9 +112,9 @@ class MesaService
                 'mensagem' => 'Mesa atualizada com sucesso'
             ];
         } catch (PDOException $e) {
-            
 
-            throw new Exception('Erro ao atualizar mesa', 500);
+
+            throw new Exception('Erro ao tentar atualizar mesa', 500);
         }
     }
 
@@ -128,7 +128,6 @@ class MesaService
                 throw new Exception($mesa['mensagem'], $mesa['codigo']);
             }
 
-
             $deletar = $this->db->prepare('DELETE FROM mesa WHERE id_mesa = :id_mesa');
 
             $deletar->execute([
@@ -140,7 +139,8 @@ class MesaService
                 'mensagem' => 'Mesa deletada com sucesso'
             ];
         } catch (PDOException $e) {
-            throw new Exception('Erro ao deletar mesa', 500);
+
+            throw new Exception('Erro ao tentar deletar mesa', 500);
         }
     }
 }

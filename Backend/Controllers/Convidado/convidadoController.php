@@ -1,13 +1,11 @@
 <?php
 
-use Firebase\JWT\ExpiredException;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
+
 require_once __DIR__ . "/../../Services/Convidado/convidadoService.php";
-require_once __DIR__ . "/../../Middleware/authMiddleware.php";
+require_once __DIR__ . "/../../Middleware/middleware.php";
 
 class ConvidadoController
 {
@@ -20,29 +18,35 @@ class ConvidadoController
         $this->chaveSecreta = $_ENV['JWT_SECRET_KEY'];
     }
 
-
-    public function validarDados($convidadoDados)
+    public function validarDados($dados)
     {
         try {
+            $confirmacaoPermitida = ['confirmado', 'não confirmado', 'cancelado'];
 
             $esquema = v::key('nome', v::stringVal()->notEmpty()->length(1, 45))
                 ->key('sobrenome', v::stringVal()->notEmpty()->length(1, 45))
                 ->key('email', v::email())
                 ->key('cpf', v::cpf())
                 ->key('categoria', v::stringVal()->notEmpty())
+                ->key('confirmacao', v::in($confirmacaoPermitida))
+                ->key('mesa_idmesa', v::intVal())
                 ->key('telefone', v::phone());
 
-            $esquema->assert($convidadoDados);
-        } catch (NestedValidationException $e) {
 
+            $esquema->assert($dados);
+        } catch (NestedValidationException $e) {
             $mensagemPersonalizada = [
-                'nome' => 'Nome inválido, min 1, max 45',
-                'sobrenome' => 'Sobrenome inválido, min 1, max 45',
+                'nome' => 'Nome inválido',
+                'sobrenome' => 'Sobrenome inválido',
                 'email' => 'Email inválido',
                 'cpf' => 'Cpf inválido',
                 'categoria' => 'Categoria inválida',
+                'confirmacao' => 'Confirmacao fora do escopo: confirmado, não confirmado e cancelado',
+                'mesa_idmesa' => 'Referencia da mesa inválida',
                 'telefone' => 'Telefone inválido'
+
             ];
+
             $mensagemOriginal = $e->getMessages();
             $mensagemTraduzida = [];
 
@@ -50,38 +54,20 @@ class ConvidadoController
                 $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
             }
 
-            http_response_code(400);
-
-            echo json_encode([
+            return [
                 'sucesso' => false,
                 'mensagem' => 'Erros de validação',
                 'erros' => $mensagemTraduzida
-            ]);
-            exit;
+            ];
         }
     }
 
-
-
     public function listarConvidados()
     {
-        Auth::validarMiddleware();
-        http_response_code(200);
-
-        echo json_encode($this->convidadoService->listarConvidados());
-        exit;
-    }
-
-    public function criarConvidado()
-    {
         try {
-
-            Auth::validarMiddleware();
-            $convidadoDados = json_decode(file_get_contents("php://input"), true);
-
-            $this->validarDados($convidadoDados);
-            http_response_code(201);
-            echo json_encode($this->convidadoService->criarConvidado($convidadoDados));
+            Middleware::validarMiddleware();
+            http_response_code(200);
+            echo json_encode($this->convidadoService->listarConvidados());
             exit;
         } catch (Exception $e) {
             http_response_code($e->getCode());
@@ -93,19 +79,34 @@ class ConvidadoController
         }
     }
 
+    public function criarConvidado()
+    {
+        try {
+            Middleware::validarMiddleware();
+
+            http_response_code(201);
+            $dados = json_decode(file_get_contents('php://input'), true);
+            echo json_encode($this->convidadoService->criarConvidado($dados));
+        } catch (Exception $e) {
+            http_response_code($e->getCode());
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => $e->getMessage()
+            ]);
+            exit;
+        }
+    }
 
 
     public function atualizarConvidado()
     {
         try {
-            Auth::validarMiddleware();
-            $convidadoDados = json_decode(file_get_contents("php://input"), true);
-            $this->validarDados($convidadoDados);
+            Middleware::validarMiddleware();
+            $dados = json_decode(file_get_contents('php://input'), true);
             $emailConvidado = $_GET['email_convidado'];
-
             http_response_code(200);
 
-            echo json_encode($this->convidadoService->atualizarConvidado($convidadoDados, $emailConvidado));
+            echo json_encode($this->convidadoService->atualizarConvidado($dados, $emailConvidado));
             exit;
         } catch (Exception $e) {
             http_response_code($e->getCode());
@@ -120,13 +121,11 @@ class ConvidadoController
     public function deletarConvidado()
     {
         try {
-            Auth::validarMiddleware();
+            Middleware::validarMiddleware();
             $emailConvidado = $_GET['email_convidado'];
-
             http_response_code(200);
 
             echo json_encode($this->convidadoService->deletarConvidado($emailConvidado));
-            exit;
         } catch (Exception $e) {
             http_response_code($e->getCode());
             echo json_encode([

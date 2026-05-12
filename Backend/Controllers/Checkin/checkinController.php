@@ -1,13 +1,11 @@
 <?php
 
-use Firebase\JWT\ExpiredException;
-use Firebase\JWT\JWT;
-use Firebase\JWT\Key;
 use Respect\Validation\Exceptions\NestedValidationException;
 use Respect\Validation\Validator as v;
 
+
 require_once __DIR__ . "/../../Services/Checkin/checkinService.php";
-require_once __DIR__ . "/../../Middleware/authMiddleware.php";
+require_once __DIR__ . "/../../Middleware/middleware.php";
 
 class CheckinController
 {
@@ -20,28 +18,42 @@ class CheckinController
         $this->chaveSecreta = $_ENV['JWT_SECRET_KEY'];
     }
 
-
-
-
-    public function listarCheckins()
-    {
-        Auth::validarMiddleware();
-        http_response_code(200);
-
-        echo json_encode($this->checkinService->listarCheckins());
-        exit;
-    }
-
-    public function criarCheckin()
+    public function validarDados($dados)
     {
         try {
 
-            $tokenJWT = Auth::validarMiddleware();
-            $checkinDados = json_decode(file_get_contents("php://input"), true);
+
+            $esquema = v::key('convidado_idconvidado', v::intVal()->notEmpty());
 
 
-            http_response_code(201);
-            echo json_encode($this->checkinService->criarCheckin($checkinDados, $tokenJWT));
+
+            $esquema->assert($dados);
+        } catch (NestedValidationException $e) {
+            $mensagemPersonalizada = [
+                'convidado_idconvidado' => 'Referência do convidado inválido'
+            ];
+
+            $mensagemOriginal = $e->getMessages();
+            $mensagemTraduzida = [];
+
+            foreach ($mensagemOriginal as $campo => $mensagem) {
+                $mensagemTraduzida[$campo] = $mensagemPersonalizada[$campo] ?? $mensagem;
+            }
+
+            return [
+                'sucesso' => false,
+                'mensagem' => 'Erros de validação',
+                'erros' => $mensagemTraduzida
+            ];
+        }
+    }
+
+    public function listarCheckins()
+    {
+        try {
+            Middleware::validarMiddleware();
+            http_response_code(200);
+            echo json_encode($this->checkinService->listarCheckins());
             exit;
         } catch (Exception $e) {
             http_response_code($e->getCode());
@@ -53,7 +65,21 @@ class CheckinController
         }
     }
 
+    public function criarCheckin()
+    {
+        try {
+            $jwt = Middleware::validarMiddleware();
 
-
-   
+            http_response_code(201);
+            $dados = json_decode(file_get_contents('php://input'), true);
+            echo json_encode($this->checkinService->criarCheckin($dados, $jwt));
+        } catch (Exception $e) {
+            http_response_code($e->getCode());
+            echo json_encode([
+                'sucesso' => false,
+                'mensagem' => $e->getMessage()
+            ]);
+            exit;
+        }
+    }
 }

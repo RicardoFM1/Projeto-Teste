@@ -2,35 +2,34 @@
 
 use Dotenv\Dotenv;
 
-require_once __DIR__ . "/../vendor/autoload.php";
-require_once __DIR__ . '/../Controllers/Usuario/usuarioController.php';
-require_once __DIR__ . '/../Controllers/Mesa/mesaController.php';
-require_once __DIR__ . '/../Controllers/Convidado/convidadoController.php';
-require_once __DIR__ . '/../Controllers/Checkin/checkinController.php';
-require_once __DIR__ . '/../Controllers/Acompanhante/acompanhanteController.php';
-require_once __DIR__ . "/../Controllers/Dashboard/dashboardController.php";
-require_once __DIR__ . "/../Controllers/Retrieve/RetrieveController.php";
+require_once __DIR__  . "/../vendor/autoload.php";
+require_once __DIR__ . "/../Controllers/Usuario/usuarioController.php";
+require_once __DIR__ . "/../Controllers/Mesa/mesaController.php";
+require_once __DIR__ . "/../Controllers/Convidado/convidadoController.php";
+require_once __DIR__ . "/../Controllers/Checkin/checkinController.php";
+require_once __DIR__ . "/../Controllers/Acompanhante/acompanhanteController.php";
 
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: OPTIONS, GET, POST, PUT, DELETE');
-header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Allow-Headers: Authorization, Content-Type');
 
 
 $dotenv = Dotenv::createImmutable(__DIR__ . "/../");
 $dotenv->load();
 
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Headers: Authorization, Content-Type');
+header('Access-Control-Allow-Methods: OPTIONS, GET, POST, PUT, DELETE');
+header('Access-Control-Allow-Credentials: true');
 
-$caminhoRequisicao = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+$rotaRequisicao = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $metodoRequisicao = $_SERVER['REQUEST_METHOD'];
 
-if($metodoRequisicao === "OPTIONS"){
+
+if ($metodoRequisicao === 'OPTIONS') {
     http_response_code(200);
 }
 
 
-// Rotas Usuario:
-if ($caminhoRequisicao === '/usuario') {
+if ($rotaRequisicao === '/usuario') {
     $usuarioController = new UsuarioController();
 
     if ($metodoRequisicao === 'GET') {
@@ -47,16 +46,15 @@ if ($caminhoRequisicao === '/usuario') {
     }
 }
 
-if ($caminhoRequisicao === "/usuario/login") {
+if ($rotaRequisicao === '/usuario/login') {
     $usuarioController = new UsuarioController();
 
-    if ($metodoRequisicao === "POST") {
+    if ($metodoRequisicao === 'POST') {
         $usuarioController->fazerLogin();
     }
 }
 
-// Rotas Mesa:
-if ($caminhoRequisicao === '/mesa') {
+if ($rotaRequisicao === '/mesa') {
     $mesaController = new MesaController();
 
     if ($metodoRequisicao === 'GET') {
@@ -74,9 +72,8 @@ if ($caminhoRequisicao === '/mesa') {
 }
 
 
-// Rotas Convidado:
-if ($caminhoRequisicao === '/convidado') {
-    $convidadoController = new ConvidadoController();
+if ($rotaRequisicao === '/convidado') {
+    $convidadoController = new convidadoController();
 
     if ($metodoRequisicao === 'GET') {
         $convidadoController->listarConvidados();
@@ -92,9 +89,7 @@ if ($caminhoRequisicao === '/convidado') {
     }
 }
 
-
-// Rotas Checkin:
-if ($caminhoRequisicao === '/checkin') {
+if ($rotaRequisicao === '/checkin') {
     $checkinController = new CheckinController();
 
     if ($metodoRequisicao === 'GET') {
@@ -103,11 +98,11 @@ if ($caminhoRequisicao === '/checkin') {
     if ($metodoRequisicao === 'POST') {
         $checkinController->criarCheckin();
     }
+   
 }
 
 
-// Rotas Acompanhante:
-if ($caminhoRequisicao === '/acompanhante') {
+if ($rotaRequisicao === '/convidado') {
     $acompanhanteController = new AcompanhanteController();
 
     if ($metodoRequisicao === 'GET') {
@@ -121,25 +116,5 @@ if ($caminhoRequisicao === '/acompanhante') {
     }
     if ($metodoRequisicao === 'DELETE') {
         $acompanhanteController->deletarAcompanhante();
-    }
-}
-
-// Rota Dashboard: 
-
-if ($caminhoRequisicao === '/dashboard') {
-    $dashboardController = new DashboardController();
-
-    if ($metodoRequisicao === 'GET') {
-        $dashboardController->listarDashboard();
-    }
-}
-
-// Rota Retrieve:
-
-if($caminhoRequisicao === "/retrieve"){
-    $retrieveController = new RetrieveController();
-
-    if($metodoRequisicao === 'GET'){
-        $retrieveController->retrieveUsuario();
     }
 }

@@ -2,7 +2,7 @@
 
 use Firebase\JWT\JWT;
 
-require_once __DIR__ . "/../../Connection/connection.php";
+require_once __DIR__ . "/../../Connection/db.php";
 
 class AcompanhanteService
 {
@@ -10,68 +10,75 @@ class AcompanhanteService
 
     public function __construct()
     {
-        $this->db = dbConnection();
+        $this->db = db();
     }
 
-    public function buscarAcompanhantePorId($idAcompanhante)
+    public function buscarAcompanhantePorEmail($emailAcompanhante)
     {
-        if (empty($idAcompanhante)) {
-            throw new Exception('Dados inválidos', 400);
-        }
+        try {
+            if (empty($emailAcompanhante)) {
+                throw new Exception('Email do acompanhante não enviado', 400);
+            }
 
-        $buscar = $this->db->prepare('SELECT * FROM acompanhante WHERE id_acompanhante = :id_acompanhante');
+            $buscar = $this->db->prepare('SELECT * FROM acompanhante WHERE email = :email');
+            $buscar->execute([
+                ':email' => $emailAcompanhante
+            ]);
 
-        $buscar->execute([
-            ':id_acompanhante' => $idAcompanhante
-        ]);
+            $acompanhante = $buscar->fetch();
 
-        $acompanhante = $buscar->fetch();
+            if (empty($acompanhante)) {
+                return [
+                    'sucesso' => false,
+                    'mensagem' => 'Acompanhante não encontrado pelo email',
+                    'codigo' => 404
+                ];
+            }
 
-        if (empty($acompanhante)) {
             return [
-                'sucesso' => false,
-                'mensagem' => 'Acompanhante não encontrado',
-                'codigo' => 404
+                'sucesso' => true,
+                'dados' => $acompanhante
             ];
+        } catch (PDOException $e) {
+            throw new Exception('Erro ao buscar acompanhante por email', 500);
         }
-
-        return [
-            'sucesso' => true,
-            'dados' => $acompanhante
-        ];
     }
 
     public function listarAcompanhantes()
     {
-        $query = $this->db->query("SELECT a.id_acompanhante, a.nome, a.sobrenome,
-        a.cpf, a.idade, co.cpf as convidado_cpf FROM acompanhante a JOIN convidado co ON co.id_convidado = a.convidado_idconvidado
-         ORDER BY id_acompanhante DESC");
+        try {
 
-        $acompanhantes = $query->fetchAll();
+            $query = $this->db->query("SELECT * FROM acompanhante");
 
-        return [
-            'sucesso' => true,
-            'dados' => $acompanhantes,
-            'total' => count($acompanhantes)
-        ];
+            $acompanhante = $query->fetchAll();
+
+            return [
+                'sucesso' => true,
+                'dados' => $acompanhante
+            ];
+        } catch (PDOException $e) {
+            throw new Exception('Erro ao tentar listar acompanhantes', 500);
+        }
     }
-
 
     public function criarAcompanhante($acompanhanteDados)
     {
         try {
+
             $acompanhanteDados['cpf'] = preg_replace('/\D/', '', $acompanhanteDados['cpf']);
 
 
 
-            $criar = $this->db->prepare('INSERT INTO acompanhante (nome, sobrenome, cpf, idade, convidado_idconvidado)
-            VALUES (:nome, :sobrenome, :cpf, :idade, :convidado_idconvidado)');
+
+            $criar = $this->db->prepare('INSERT INTO acompanhante (nome, sobrenome, email, cpf, idade, convidado_idconvidado)
+        VALUES(:nome, :sobrenome, :email, :cpf, :idade, :convidado_idconvidado)');
 
             $criar->execute([
                 ':nome' => $acompanhanteDados['nome'],
                 ':sobrenome' => $acompanhanteDados['sobrenome'],
-                ':idade' => $acompanhanteDados['idade'],
+                ':email' => $acompanhanteDados['email'],
                 ':cpf' => $acompanhanteDados['cpf'],
+                ':idade' => $acompanhanteDados['idade'],
                 ':convidado_idconvidado' => $acompanhanteDados['convidado_idconvidado']
 
             ]);
@@ -81,52 +88,49 @@ class AcompanhanteService
                 'mensagem' => 'Acompanhante criado com sucesso'
             ];
         } catch (PDOException $e) {
+            if (str_contains($e->getMessage(), 'email')) {
+                throw new Exception('Email já em uso', 409);
+            }
 
             if (str_contains($e->getMessage(), 'cpf')) {
                 throw new Exception('CPF já em uso', 409);
             }
 
             if (str_contains($e->getMessage(), 'fk_acompanhante_convidado')) {
-                throw new Exception('Convidado referenciado não encontrada', 409);
+                throw new Exception('Convidado referenciado não encontrado', 404);
             }
 
-
-            throw new Exception('Erro ao criar acompanhante', 500);
+            throw new Exception('Erro ao tentar criar convidado', 500);
         }
     }
 
 
 
-
-    public function atualizarAcompanhante($acompanhanteDados, $idAcompanhante)
+    public function atualizarAcompanhante($acompanhanteDados, $emailAcompanhante)
     {
         try {
-
-            if (empty($idAcompanhante)) {
-                throw new Exception('Dados inválidos', 400);
-            }
-
             $acompanhanteDados['cpf'] = preg_replace('/\D/', '', $acompanhanteDados['cpf']);
+            $acompanhanteDados['telefone'] = preg_replace('/\D/', '', $acompanhanteDados['telefone']);
 
-
-
-
-            $acompanhante = $this->buscarAcompanhantePorId($idAcompanhante);
+            $acompanhante = $this->buscarAcompanhantePorEmail($emailAcompanhante);
 
             if ($acompanhante['sucesso'] === false) {
                 throw new Exception($acompanhante['mensagem'], $acompanhante['codigo']);
             }
 
-            $atualizar = $this->db->prepare('UPDATE acompanhante set nome = :nome, sobrenome = :sobrenome, cpf = :cpf, idade = :idade,
-            convidado_idconvidado = :convidado_idconvidado WHERE id_acompanhante = :id_acompanhante');
+           
+            $atualizar = $this->db->prepare('UPDATE acompanhante SET nome = :nome, sobrenome = :sobrenome,
+            email = :email, cpf = :cpf, idade = :idade, convidado_idconvidado = :convidado_idconvidado, 
+           WHERE email = :email_acompanhante');
 
             $atualizar->execute([
-                ':nome' => $acompanhanteDados['nome'],
+                  ':nome' => $acompanhanteDados['nome'],
                 ':sobrenome' => $acompanhanteDados['sobrenome'],
-                ':idade' => $acompanhanteDados['idade'],
+                ':email' => $acompanhanteDados['email'],
                 ':cpf' => $acompanhanteDados['cpf'],
+                ':idade' => $acompanhanteDados['idade'],
                 ':convidado_idconvidado' => $acompanhanteDados['convidado_idconvidado'],
-                ':id_acompanhante' => $idAcompanhante
+                ':email_acompanhante' => $emailAcompanhante
             ]);
 
             return [
@@ -134,35 +138,37 @@ class AcompanhanteService
                 'mensagem' => 'Acompanhante atualizado com sucesso'
             ];
         } catch (PDOException $e) {
+            if (str_contains($e->getMessage(), 'email')) {
+                throw new Exception('Email já em uso', 409);
+            }
 
             if (str_contains($e->getMessage(), 'cpf')) {
                 throw new Exception('CPF já em uso', 409);
             }
 
             if (str_contains($e->getMessage(), 'fk_acompanhante_convidado')) {
-                throw new Exception('Convidado referenciado não encontrada', 409);
+                throw new Exception('Convidado referenciado não encontrado', 404);
             }
 
 
-            throw new Exception('Erro ao atualizar acompanhante', 500);
+            throw new Exception('Erro ao tentar atualizar convidado', 500);
         }
     }
 
-    public function deletarAcompanhante($idAcompanhante)
+    public function deletarAcompanhante($emailAcompanhante)
     {
         try {
 
-            $acompanhante = $this->buscarAcompanhantePorId($idAcompanhante);
+            $acompanhante = $this->buscarAcompanhantePorEmail($emailAcompanhante);
 
             if ($acompanhante['sucesso'] === false) {
                 throw new Exception($acompanhante['mensagem'], $acompanhante['codigo']);
             }
 
-
-            $deletar = $this->db->prepare('DELETE FROM acompanhante WHERE id_acompanhante = :id_acompanhante');
+            $deletar = $this->db->prepare('DELETE FROM acompanhante WHERE email = :email');
 
             $deletar->execute([
-                ':id_acompanhante' => $idAcompanhante
+                ':email' => $emailAcompanhante
             ]);
 
             return [
@@ -170,7 +176,8 @@ class AcompanhanteService
                 'mensagem' => 'Acompanhante deletado com sucesso'
             ];
         } catch (PDOException $e) {
-            throw new Exception('Erro ao deletar acompanhante', 500);
+            
+            throw new Exception('Erro ao tentar deletar acompanhante', 500);
         }
     }
 }
